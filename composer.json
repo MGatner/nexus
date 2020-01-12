@@ -1,9 +1,11 @@
 {
-    "name": "codeigniter4/devstarter",
+    "name": "mgatner/blademaster",
     "type": "project",
-    "description": "CodeIgniter4 starter app",
-    "homepage": "https://codeigniter.com",
+    "description": "Heroes of the Storm simulator for Samuro",
+    "homepage": "https://tat.red/blademaster",
     "license": "MIT",
+	"minimum-stability": "dev",
+	"prefer-stable": true,
     "repositories": [
         {
             "type": "vcs",
@@ -16,16 +18,19 @@
     },
     "require-dev": {
         "mikey179/vfsstream": "1.6.*",
-        "phpunit/phpunit": "^7.0"
+		"mockery/mockery": "^1.0",
+        "phpunit/phpunit": "^7.0",
+		"fzaninotto/faker": "^1.9@dev"
     },
-    "scripts": {
-        "post-update-cmd": [
-            "composer dump-autoload"
-        ]
-    },
-    "support": {
-        "forum": "http://forum.codeigniter.com/",
-        "source": "https://github.com/codeigniter4/CodeIgniter4",
-        "slack": "https://codeigniterchat.slack.com"
-    }
+	"autoload-dev": {
+		"psr-4": {
+			"ProjectTests\\Support\\": "tests/_support"
+		}
+	},
+	"scripts": {
+		"test": "phpunit",
+		"post-update-cmd": [
+			"composer dump-autoload"
+		]
+	}
 }
