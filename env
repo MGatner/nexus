@@ -49,6 +49,9 @@ app.baseURL = 'http://localhost:8080'
 # DATABASE
 #--------------------------------------------------------------------
 
+database.default.database = ../writable/database.db
+database.default.DBDriver = SQLite3
+
 # database.default.hostname = localhost
 # database.default.database = ci4
 # database.default.username = root
