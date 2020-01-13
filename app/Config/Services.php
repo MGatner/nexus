@@ -1,5 +1,7 @@
 <?php namespace Config;
 
+use App\Libraries\Queue;
+use App\Libraries\Nexus;
 use CodeIgniter\Config\Services as CoreServices;
 use CodeIgniter\Config\BaseConfig;
 
@@ -20,14 +22,21 @@ require_once SYSTEMPATH . 'Config/Services.php';
  */
 class Services extends CoreServices
 {
+	/**
+	 * Returns an instance of the Nexus
+	 *
+	 * @param ActionQueue $queue  The Queue to handle actions
+	 * @param boolean  $getShared
+	 *
+	 * @return \Tatter\Stripe\Stripe
+	 */
+	public static function nexus(Queue $queue = null, bool $getShared = true): Nexus
+	{
+		if ($getShared)
+		{
+			return static::getSharedInstance('nexus', $queue);
+		}
 
-	//    public static function example($getShared = true)
-	//    {
-	//        if ($getShared)
-	//        {
-	//            return static::getSharedInstance('example');
-	//        }
-	//
-	//        return new \CodeIgniter\Example();
-	//    }
+		return new Nexus($queue);
+	}
 }

@@ -1,7 +1,6 @@
 <?php
 
-use App\Libraries\Properties\Stats;
-use App\Libraries\Units\Hero;
+use App\Units\Hero;
 
 class HeroTest extends \CodeIgniter\Test\CIUnitTestCase
 {
@@ -9,24 +8,61 @@ class HeroTest extends \CodeIgniter\Test\CIUnitTestCase
 	{
 		parent::setUp();
 		
-		$this->hero = new Hero();
+		$this->hero = new Hero('Raynor');
 	}
-
-	public function testHasStats()
+	
+	public function testDefaultDataIsNull()
 	{
-		$this->assertInstanceOf(Stats::class, $this->hero->stats);
+		$this->assertNull($this->getPrivateProperty($this->hero, 'default'));
 	}
-
-	public function testGetsDefaultStats()
+	
+	public function testEnsureDataLoadsData()
 	{
-		$this->assertEquals(10000, $this->hero->stats->life->amount);
+		isset($this->hero->foobar);
+
+		$this->assertNotNull($this->getPrivateProperty($this->hero, 'default'));
+	}
+	
+	public function testEnsureDataLoadsCorrectData()
+	{
+		$this->assertEquals('Starcraft', $this->hero->franchise);
+	}
+	
+	public function testCanChangeData()
+	{
+		$this->hero->gender = 'Female';
+
+		$this->assertEquals('Female', $this->hero->gender);
+	}
+	
+	public function testCanChangeNestedData()
+	{
+		$this->hero->ratings->complexity = 10;
+
+		$this->assertEquals(10, $this->hero->ratings->complexity);
+	}
+	
+	public function testCanResetData()
+	{
+		$this->hero->gender = 'Female';
+		
+		$this->hero->reset();
+
+		$this->assertEquals('Male', $this->hero->gender);
+	}
+	
+	public function testCanAddData()
+	{
+		$this->hero->favoriteIceCream = 'pistachio';
+
+		$this->assertEquals('pistachio', $this->hero->favoriteIceCream);
 	}
 
 	public function testHasTalent()
 	{
 		$this->hero->talented = ['talent1', 'talent2', 'talent3'];
-		
-		$this->assertTrue($this->hero->hasTalent('talent2');
-		$this->assertFalse($this->hero->hasTalent('talent9');
+
+		$this->assertTrue($this->hero->hasTalent('talent2'));
+		$this->assertFalse($this->hero->hasTalent('talent9'));
 	}
 }

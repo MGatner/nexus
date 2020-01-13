@@ -11,6 +11,10 @@
             "type": "vcs",
             "url": "https://github.com/codeigniter4/codeigniter4"
         },
+        {
+            "type": "vcs",
+            "url": "https://github.com/MGatner/heroes-data"
+        },
 		{
 			"type": "composer",
 			"url": "https://asset-packagist.org"
@@ -19,6 +23,7 @@
    "require": {
         "php": ">=7.2",
         "codeigniter4/codeigniter4": "dev-develop",
+        "heroestoolchest/heroes-data": "dev-nexus",
         "tatter/assets": "^2.1"
     },
     "require-dev": {
