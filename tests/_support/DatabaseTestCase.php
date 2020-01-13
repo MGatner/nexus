@@ -14,7 +14,7 @@ class DatabaseTestCase extends \CodeIgniter\Test\CIDatabaseTestCase
      *
      * @var string
      */
-    protected $seed = 'ProjectTests\Support\Database\Seeds\ExampleSeeder';
+    protected $seed = 'ProjectTests\Support\Database\Seeds\TestSeeder';
 
     /**
      * The path to where we can find the test Seeds directory.
@@ -28,7 +28,7 @@ class DatabaseTestCase extends \CodeIgniter\Test\CIDatabaseTestCase
      *
      * @var string
      */
-    protected $namespace = 'ProjectTests\Support';
+    protected $namespace = 'App';
 
     public function setUp(): void
     {
