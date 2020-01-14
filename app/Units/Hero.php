@@ -1,7 +1,5 @@
 <?php namespace App\Units;
 
-use App\Libraries\Queue;
-
 /**
  * Class Hero
  *
@@ -22,13 +20,6 @@ class Hero extends BaseUnit
 	 * @var string
 	 */
 	protected $cHeroId;
-
-	/**
-	 * The queue to use for this hero's actions.
-	 *
-	 * @var Queue
-	 */
-	protected $queue;
 
 	/**
 	 * Talents this hero has selected.
@@ -83,15 +74,13 @@ class Hero extends BaseUnit
 	/**
 	 * Create the hero with an intial set of values.
 	 *
-	 * @param string $cHeroId  The ID of the hero to load
-	 * @param Queue $queue     The queue to use for this hero's actions
-	 * @param int $level       Hero's initial level
-	 * @param array $talented  Hero's initial talent selection
+	 * @param string $cHeroId     The ID of the hero to load
+	 * @param int $level          Hero's initial level
+	 * @param array $talented     Hero's initial talent selection
 	 */
-	public function __construct(string $cHeroId, Queue &$queue, int $level = 1, array $talented = [])
+	public function __construct(string $cHeroId, int $level = 1, array $talented = [])
 	{
 		$this->cHeroId  = $cHeroId;
-		$this->queue    = $queue;
 		$this->level    = $level;
 		$this->talented = $talented;
 	}
@@ -116,7 +105,7 @@ class Hero extends BaseUnit
 		}
 		
 		// Point this instance's data at the specified hero
-		$this->default =& self::$master->{$this->cHeroId};
+		$this->default = self::$master->{$this->cHeroId};
 		
 		// Clone the default to start the current set
 		$this->current = clone $this->default;

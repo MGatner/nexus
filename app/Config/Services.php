@@ -1,7 +1,6 @@
 <?php namespace Config;
 
-use App\Libraries\Queue;
-use App\Libraries\Nexus;
+use App\Libraries\Schedule;
 use CodeIgniter\Config\Services as CoreServices;
 use CodeIgniter\Config\BaseConfig;
 
@@ -25,18 +24,17 @@ class Services extends CoreServices
 	/**
 	 * Returns an instance of the Nexus
 	 *
-	 * @param ActionQueue $queue  The Queue to handle actions
 	 * @param boolean  $getShared
 	 *
-	 * @return \Tatter\Stripe\Stripe
+	 * @return \App\Libraries\Schedule
 	 */
-	public static function nexus(Queue $queue = null, bool $getShared = true): Nexus
+	public static function schedule(bool $getShared = true): Schedule
 	{
 		if ($getShared)
 		{
-			return static::getSharedInstance('nexus', $queue);
+			return static::getSharedInstance('schedule');
 		}
 
-		return new Nexus($queue);
+		return new Schedule();
 	}
 }

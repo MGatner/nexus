@@ -1,5 +1,6 @@
 <?php
 
+use App\Libraries\Outcome;
 use App\Units\Hero;
 use App\Units\Heroes\Samuro;
 
@@ -11,6 +12,9 @@ class SamuroTest extends \CodeIgniter\Test\CIUnitTestCase
 		
 		$this->samuro = new Samuro();
 		$this->raynor = new Hero('Raynor');
+
+		// Since stats change with patches we'll use a preset number
+		$this->samuro->weapons[0]->damage = 102;
 	}
 
 	public function testLoadData()
@@ -20,7 +24,7 @@ class SamuroTest extends \CodeIgniter\Test\CIUnitTestCase
 
 	public function testCanAttack()
 	{
-		$result = $this->samuro->attack($this->raynor);
+		$result = $this->samuro->calculateAttackDamage($this->raynor);
 
 		$this->assertNotEmpty($result);
 	}
@@ -36,7 +40,7 @@ class SamuroTest extends \CodeIgniter\Test\CIUnitTestCase
 			'harsh' => 0,
 		];
 
-		$result = $this->samuro->attack($this->raynor);
+		$result = $this->samuro->calculateAttackDamage($this->raynor);
 
 		$this->assertEquals($expected, $result);
 	}
@@ -53,8 +57,15 @@ class SamuroTest extends \CodeIgniter\Test\CIUnitTestCase
 		];
 		$this->setPrivateProperty($this->samuro, 'nextCrit', 0);
 
-		$result = $this->samuro->attack($this->raynor);
+		$result = $this->samuro->calculateAttackDamage($this->raynor);
 
 		$this->assertEquals($expected, $result);
+	}
+
+	public function testAbilitiesCreateOutcomes()
+	{
+		$result = $this->samuro->A($this->raynor);
+
+		$this->assertInstanceOf(Outcome::class, $result);
 	}
 }

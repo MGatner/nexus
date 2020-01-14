@@ -1,6 +1,7 @@
 <?php namespace App\Libraries;
 
 use App\Units\BaseUnit;
+use App\Libraries\Outcome;
 
 /**
  * Class Action
@@ -26,10 +27,10 @@ class Action
 	/**
 	 * Save the parameters.
 	 *
-	 * @param Unit $unit          The unit issuing this action
-	 * @param callback $callback  The callback to perform
+	 * @param Unit $unit  The unit issuing this action
+	 * @param $callback   The callback to perform
 	 */
-	public function __construct(BaseUnit &$unit, $callback)
+	public function __construct(BaseUnit $unit, $callback)
 	{
 		$this->unit     = $unit;
 		$this->callback = $callback;
@@ -38,9 +39,9 @@ class Action
 	/**
 	 * Run the callback and return the results.
 	 *
-	 * @return array|null
+	 * @return mixed
 	 */
-	public function run(): ?array
+	public function run()
 	{
 		return call_user_func($this->callback);
 	}

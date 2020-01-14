@@ -1,6 +1,7 @@
 <?php namespace App\Units\Heroes;
 
 use App\Libraries\Action;
+use App\Libraries\Outcome;
 use App\Units\BaseUnit;
 use App\Units\Hero;
 
@@ -28,13 +29,12 @@ class Samuro extends Hero
 	/**
 	 * Create the Blademaster with an intial set of values.
 	 *
-	 * @param Queue $queue     The queue to use for this hero's actions
-	 * @param int $level       Current level for this hero
-	 * @param array $talented  Array of talents selected
+	 * @param int $level          Current level for this hero
+	 * @param array $talented     Array of talents selected
 	 */
-	public function __construct(Queue $queue, int $level = 1, $talented = [])
+	public function __construct(int $level = 1, $talented = [])
 	{
-		parent::__construct('Samuro', $queue, $level, $talented);
+		parent::__construct('Samuro', $level, $talented);
 	}
 
 	/**
@@ -49,9 +49,10 @@ class Samuro extends Hero
 		// WIP - process all on-hit talents & abilities
 
 		// Reschedule this action
-		$this->queue->push($this->current->weapons[0]->period, new Action($this, [$this, 'A', $unit]));
+		$this->schedule()->push($this->current->weapons[0]->period, new Action($this, [$this, 'A', $unit]));
 
-		return $damage;
+		// Return the outcome
+		return $this->outcome($damage, true);
 	}
 
 	/**
@@ -62,9 +63,9 @@ class Samuro extends Hero
 
 		// WIP - spawn clones
 
-		$this->queue->push($this->current->abilities->basic[0], new Action($this, [$this, 'Q']));
+		$this->schedule()->push($this->current->abilities->basic[0], new Action($this, [$this, 'Q']));
 
-		return true;
+		return $this->outcome(true);
 	}
 
 	/**
@@ -74,7 +75,9 @@ class Samuro extends Hero
 	{
 		// WIP - set nextCrit and an expiry timer
 		
-		$this->queue->push($this->current->abilities->basic[1], new Action($this, [$this, 'W']));
+		$this->schedule()->push($this->current->abilities->basic[1], new Action($this, [$this, 'W']));
+		
+		return $this->outcome(true);
 	}
 
 	/**
@@ -84,7 +87,9 @@ class Samuro extends Hero
 	{
 		// WIP - process talent procs
 
-		$this->queue->push($this->current->abilities->basic[2], new Action($this, [$this, 'E']));
+		$this->schedule()->push($this->current->abilities->basic[2], new Action($this, [$this, 'E']));
+		
+		return $this->outcome(true);
 	}
 
 	/**

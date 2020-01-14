@@ -1,13 +1,14 @@
 <?php namespace App\Libraries;
 
 use App\Libraries\Action;
+use App\Libraries\Outcome;
 
 /**
- * Class Queue
+ * Class Schedule
  *
- * Queue to handle registered actions.
+ * Schedule to handle registered actions.
  */
-class Queue
+class Schedule
 {
 	/**
 	 * Time limit before the simulator quits.
@@ -17,7 +18,7 @@ class Queue
 	public $timelimit = 60;
 
 	/**
-	 * Simulated seconds since the queue started.
+	 * Simulated seconds since the game started.
 	 *
 	 * @var float
 	 */
@@ -35,7 +36,7 @@ class Queue
 	 *
 	 * @var array of floats
 	 */
-	protected $schedule = [];
+	protected $stamps = [];
 
 	/**
 	 * Registered actions.
@@ -64,10 +65,10 @@ class Queue
 	/**
 	 * Register an action to run at a time in the future.
 	 *
-	 * @param float $time         Seconds in the future to schedule the action
-	 * @param Action $action    The action to perform
+	 * @param float $time     Seconds in the future to schedule the action
+	 * @param Action $action  The action to perform
 	 *
-	 * @return int  ID of the registered action in the queue
+	 * @return int  ID of the registered action in the Schedule
 	 */
 	public function push(float $time, Action $action): int
 	{
@@ -79,7 +80,7 @@ class Queue
 		$this->actions[] = $action;
 
 		// Schedule it
-		$this->schedule[] = $this->timestamp + $time;
+		$this->stamps[] = $this->timestamp + $time;
 
 		// Notify that the schedule is no longer necessarily in order
 		$this->sorted = false;
@@ -88,29 +89,36 @@ class Queue
 	}
 
 	/**
-	 * Return the next Action, rescheduling repeats and increasing timestamp as necessary.
+	 * Return the Outcome of the next Action, rescheduling repeats and increasing timestamp as necessary.
 	 *
-	 * @return Action  The next scheduled Action in the queue
+	 * @return Outcome  Outcome of the next scheduled Action
 	 */
-	public function pop(): ?Action
+	public function pop(): ?Outcome
 	{
-		if (empty($this->schedule))
+		if (empty($this->actions))
+		{
+			return null;
+		}
+		if ($this->timestamp > $this->timelimit)
 		{
 			return null;
 		}
 
-		// Sort the queue and metadata
-		array_multisort($this->schedule, $this->actions, $this->ids);
+		// Sort the Schedule and metadata
+		array_multisort($this->stamps, $this->actions, $this->ids);
 		$this->sorted = true;
 
 		// Get what's next
-		$stamp  = array_shift($this->schedule);
+		$stamp  = array_shift($this->stamps);
 		$action = array_shift($this->actions);
 		$id     = array_shift($this->ids);
 		
 		// Push forward the current time
 		$this->timestamp = $stamp;
 
-		return $action;
+		// Run the Action and put the results into an Outcome
+		$data = $action->run();
+		
+		return new Outcome($this->timestamp, $action->unit, $data);
 	}
 }
