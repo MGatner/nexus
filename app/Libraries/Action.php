@@ -17,13 +17,6 @@ class Action
 	public $unit;
 
 	/**
-	 * Seconds in the future to schedule the action
-	 *
-	 * @var float
-	 */
-	protected $time;
-
-	/**
 	 * The actual method to call.
 	 *
 	 * @var callback
@@ -35,23 +28,11 @@ class Action
 	 *
 	 * @param Unit $unit          The unit issuing this action
 	 * @param callback $callback  The callback to perform
-	 * @param float $time         Seconds in the future to schedule the action
 	 */
-	public function __construct(BaseUnit &$unit, $callback, float $time)
+	public function __construct(BaseUnit &$unit, $callback)
 	{
 		$this->unit     = $unit;
 		$this->callback = $callback;
-		$this->time     = $time;
-	}
-
-	/**
-	 * Return the scheduled time.
-	 *
-	 * @return float
-	 */
-	public function time(): float
-	{
-		return $this->time;
 	}
 
 	/**

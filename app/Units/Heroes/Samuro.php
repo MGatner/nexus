@@ -28,11 +28,13 @@ class Samuro extends Hero
 	/**
 	 * Create the Blademaster with an intial set of values.
 	 *
+	 * @param Queue $queue     The queue to use for this hero's actions
+	 * @param int $level       Current level for this hero
 	 * @param array $talented  Array of talents selected
 	 */
-	public function __construct(int $level = 1, $talented = [])
+	public function __construct(Queue $queue, int $level = 1, $talented = [])
 	{
-		parent::__construct('Samuro', $level, $talented);
+		parent::__construct('Samuro', $queue, $level, $talented);
 	}
 
 	/**
@@ -42,17 +44,57 @@ class Samuro extends Hero
 	 */
 	public function A(BaseUnit &$unit)
 	{
-		return new Action($this, ['attack', $unit], $this->weapons[0]->period);
+		$damage = $this->calculateAttackDamage($unit);
+
+		// WIP - process all on-hit talents & abilities
+
+		// Reschedule this action
+		$this->queue->push($this->current->weapons[0]->period, new Action($this, [$this, 'A', $unit]));
+
+		return $damage;
 	}
 
 	/**
-	 * Attack a unit returning the damage dealt of each type.
+	 * Cast Mirror Image.
+	 */
+	public function Q()
+	{
+
+		// WIP - spawn clones
+
+		$this->queue->push($this->current->abilities->basic[0], new Action($this, [$this, 'Q']));
+
+		return true;
+	}
+
+	/**
+	 * Cast Critical Strikes.
+	 */
+	public function W()
+	{
+		// WIP - set nextCrit and an expiry timer
+		
+		$this->queue->push($this->current->abilities->basic[1], new Action($this, [$this, 'W']));
+	}
+
+	/**
+	 * Cast Wind Walk.
+	 */
+	public function E()
+	{
+		// WIP - process talent procs
+
+		$this->queue->push($this->current->abilities->basic[2], new Action($this, [$this, 'E']));
+	}
+
+	/**
+	 * Calculate the damage dealt broken into its parts.
 	 *
 	 * @param BaseUnit $unit  Anything Samuro can attack
 	 *
 	 * @return array  Array of damage by type
 	 */
-	public function attack(BaseUnit $unit): array
+	public function calculateAttackDamage(BaseUnit $unit): array
 	{
 		// Tally each damage source as we go
 		$result = [
@@ -105,33 +147,6 @@ class Samuro extends Hero
 		}
 
 		return $result;
-	}
-
-	/**
-	 * Cast Mirror Image.
-	 */
-	public function Q()
-	{
-		// Reset the cooldown
-		$this->cooldowns['Q'] = 14;
-	}
-
-	/**
-	 * Cast Critical Strikes.
-	 */
-	public function W()
-	{
-		// Reset the cooldown
-		$this->cooldowns['W'] = 10;
-	}
-
-	/**
-	 * Cast Wind Walk.
-	 */
-	public function E()
-	{
-		// Reset the cooldown
-		$this->cooldowns['E'] = 15;
 	}
 
 	/**

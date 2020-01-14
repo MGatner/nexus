@@ -10,6 +10,13 @@ use App\Libraries\Action;
 class Queue
 {
 	/**
+	 * Time limit before the simulator quits.
+	 *
+	 * @var float
+	 */
+	public $timelimit = 60;
+
+	/**
 	 * Simulated seconds since the queue started.
 	 *
 	 * @var float
@@ -22,13 +29,6 @@ class Queue
 	 * @var int
 	 */
 	protected $lastId = 0;
-
-	/**
-	 * Whether the schedule can be trusted to be in order.
-	 *
-	 * @var bool
-	 */
-	protected $sorted = true;
 
 	/**
 	 * Timestamps to run each registered action.
@@ -52,13 +52,6 @@ class Queue
 	protected $ids = [];
 
 	/**
-	 * Instructions on repeating each action.
-	 *
-	 * @var int|bool  Number occurences, true for infinite, false or 0 for none
-	 */
-	protected $repeats = [];
-
-	/**
 	 * Return the current simulated timestamp.
 	 *
 	 * @return float
@@ -71,12 +64,12 @@ class Queue
 	/**
 	 * Register an action to run at a time in the future.
 	 *
+	 * @param float $time         Seconds in the future to schedule the action
 	 * @param Action $action    The action to perform
-	 * @param int|bool $repeat  Whether the action repeats; false = no repeat, true = indefinitely, int = number of times
 	 *
 	 * @return int  ID of the registered action in the queue
 	 */
-	public function push(Action $action, $repeat = false): int
+	public function push(float $time, Action $action): int
 	{
 		// Get the next ID
 		$this->lastId++;
@@ -86,8 +79,7 @@ class Queue
 		$this->actions[] = $action;
 
 		// Schedule it
-		$this->schedule[] = $this->timestamp + $action->time();
-		$this->repeats[]  = $repeat;
+		$this->schedule[] = $this->timestamp + $time;
 
 		// Notify that the schedule is no longer necessarily in order
 		$this->sorted = false;
@@ -108,33 +100,16 @@ class Queue
 		}
 
 		// Sort the queue and metadata
-		array_multisort($this->schedule, $this->actions, $this->ids, $this->repeats);
+		array_multisort($this->schedule, $this->actions, $this->ids);
 		$this->sorted = true;
 
 		// Get what's next
 		$stamp  = array_shift($this->schedule);
 		$action = array_shift($this->actions);
 		$id     = array_shift($this->ids);
-		$repeat = array_shift($this->repeats);
 		
 		// Push forward the current time
 		$this->timestamp = $stamp;
-		
-		// If this action repeats then reschedule it
-		if ($repeat)
-		{
-			// For limited re-occurences decrement the count
-			if (is_int($repeat))
-			{
-				$repeat--;
-			}
-
-			// Make sure occurrences aren't exhausted
-			if ($repeat)
-			{
-				$this->push($action, $repeat);
-			}
-		}
 
 		return $action;
 	}
