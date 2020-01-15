@@ -61,17 +61,6 @@ class Hero extends BaseUnit
 	public $spellArmor = 0;
 
 	/**
-	 * Array of active effects.
-	 * 	- slow
-	 * 	- stun
-	 * 	- dead
-	 * 	- {various} marks for specific talents/abilities (like Harsh Wind)
-	 *
-	 * @var array of type => value
-	 */
-	public $effects = [];
-
-	/**
 	 * Create the hero with an intial set of values.
 	 *
 	 * @param string $cHeroId     The ID of the hero to load
@@ -112,6 +101,21 @@ class Hero extends BaseUnit
 	}
 
 	/**
+	 * Add a talent to the list of selected talents.
+	 * Should be overridden by indivudal heroes for specifics.
+	 *
+	 * @param string $nameId  nameId of the target talent
+	 *
+	 * @return $this
+	 */
+	public function selectTalent(string $nameId)
+	{
+		$this->talented[] = $nameId;
+
+		return $this;
+	}
+
+	/**
 	 * Whether this hero has selected the target talent.
 	 *
 	 * @param string $nameId  nameId of the target talent
@@ -121,22 +125,5 @@ class Hero extends BaseUnit
 	public function hasTalent(string $nameId): bool
 	{
 		return in_array($nameId, $this->talented);
-	}
-
-	/**
-	 * Whether this hero has any of the requested effects.
-	 *
-	 * @param array|string $effect  Name or names of the effect
-	 *
-	 * @return bool  Whether any of the effects are active
-	 */
-	public function hasEffect($effect): bool
-	{
-		if (! is_array($effect))
-		{
-			$effect = [$effect];
-		}
-		
-		return (bool) array_intersect($effect, array_keys($this->effects));
 	}
 }

@@ -24,7 +24,7 @@ class Samuro extends Hero
 	 *
 	 * @var int
 	 */
-	protected $nextCrit = 4;
+	protected $nextCrit;
 
 	/**
 	 * Stacks towards Way of Illusion.
@@ -42,6 +42,8 @@ class Samuro extends Hero
 	public function __construct(int $level = 1, $talented = [])
 	{
 		parent::__construct('Samuro', $level, $talented);
+
+		$this->setCrit();
 	}
 
 	/**
@@ -53,7 +55,13 @@ class Samuro extends Hero
 	{
 		$damage = $this->calculateAttackDamage($unit);
 
-		$this->nextCrit--;
+		$this->nextCrit ? $this->nextCrit-- : $this->setCrit();
+
+		// Reduce physical Armor by 5 for 2.25 seconds stacking up to 3 times
+		if ($this->hasTalent('SamuroMirrorImageWayOfTheBlade'))
+		{
+			
+		}
 
 		// WIP - process all on-hit talents & abilities
 
@@ -121,19 +129,25 @@ class Samuro extends Hero
 			'spell' => 0,
 			'armor' => 0,
 			'harsh' => 0,
+			'total' => 0,
 		];
 
 		// Scaled base = damage * (scaling ^ level)
 		$result['base'] = $this->weapons[0]->damage * pow(1 + $this->weapons[0]->damageScale, $this->level);
 
 		// Quest damage adds a flat amount
-		$result['quest'] = $this->hasTalent('SamuroWayOfIllusion') ? 30 : 0;
+		if ($this->hasTalent('SamuroWayOfIllusion'))
+		{
+			$result['quest'] = min(10, 0.25 * $this->illusionStacks);
+			if ($this->illusionStacks >= 40)
+			{
+				$result['quest'] += 20;
+			}
+		}
 
 		// Is it a critical strike?
 		if ($this->isCrit($unit))
 		{
-			$this->nextCrit = 4;
-
 			$adjusted = $result['base'] + $result['quest'];
 
 			if ($this->hasTalent('SamuroBurningBlade'))
@@ -187,6 +201,47 @@ class Samuro extends Hero
 		}
 		
 		// Otherwise it is a crit if Merciless Strikes hits a CC hero
-		return $unit instanceof Hero && $unit->hasEffect(['stun', 'root', 'slow']) && $this->hasTalent('SamuroHarshWinds');
+		return $unit instanceof Hero && $unit->hasStatus(['stun', 'root', 'slow']) && $this->hasTalent('SamuroHarshWinds');
+	}
+
+	/**
+	 * Set the number of attacks until next crit.
+	 *
+	 * @param int|null $num
+	 *
+	 * @return $this
+	 */
+	public function setCrit(int $num = null): self
+	{
+		// If no number was passed then set it based off talents
+		if ($num === null)
+		{
+			$num = $this->hasTalent('SamuroMirrorImageWayOfTheBlade') ? 3 : 4;
+		}
+		$this->nextCrit = $num;
+
+		return $this;
+	}
+
+	/**
+	 * Add a talent to the list of selected talents, processing any specific effects.
+	 *
+	 * @param string $nameId  nameId of the target talent
+	 *
+	 * @return $this
+	 */
+	public function selectTalent(string $nameId)
+	{
+		parent::selectTalent($nameId);
+		
+		switch ($nameId)
+		{
+			case 'SamuroWayOfIllusion':
+				// WIP - need to implement stacking
+				$this->illusionStacks = 40;
+			break;
+		}
+
+		return $this;
 	}
 }

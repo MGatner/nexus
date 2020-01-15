@@ -15,7 +15,7 @@ class Schedule
 	 *
 	 * @var float
 	 */
-	public $timelimit = 60;
+	public $timelimit = 30;
 
 	/**
 	 * Simulated seconds since the game started.
@@ -124,5 +124,44 @@ class Schedule
 		$data = $action->run();
 		
 		return new Outcome($this->timestamp, $action->unit, $data);
+	}
+
+	/**
+	 * Cancel an action.
+	 *
+	 * @param int $actionId  ID of the scheduled action to cancel
+	 *
+	 * @return bool  false if the action ID wasn't found, true otherwise
+	 */
+	public function cancel(int $actionId): bool
+	{
+		if ($i = array_search($actionId, $this->ids))
+		{
+			unset($this->ids[$i], $this->actions[$i], $this->stamps[$i]);
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Update the time before a scheduled action runs.
+	 *
+	 * @param int $actionId  ID of the scheduled action to extend
+	 * @param float $stamp   New timestamp to apply
+	 *
+	 * @return bool  false if the action ID wasn't found, true otherwise
+	 */
+	public function update(int $actionId, float $stamp): bool
+	{
+		if ($i = array_search($actionId, $this->ids))
+		{
+			$this->stamps[$i] = $stamp;
+
+			return true;
+		}
+
+		return false;
 	}
 }

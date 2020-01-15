@@ -41,7 +41,7 @@ class Simulate extends BaseCommand
 			}
 		}
 
-		$thead = ['Task ID', 'Name', 'Category', 'UID', 'Class', 'Summary'];
+		$thead = ['Base', 'Quest', 'Crit', 'Spell', 'Armor', 'Harsh', 'Total', 'Timestamp'];
 		CLI::table($rows, $thead);
 	}
 }

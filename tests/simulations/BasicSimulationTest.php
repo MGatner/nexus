@@ -56,14 +56,14 @@ class BasicSimulationTest extends \CodeIgniter\Test\CIUnitTestCase
 	{
 		$this->schedule->timelimit = 30;
 
-		$outcome = $this->samuro->A($this->raynor);
-		$damage  = $outcome->data['total'];
+		$data   = $this->samuro->A($this->raynor);
+		$damage = $data['total'];
 
 		while ($outcome = $this->schedule->pop())
 		{
 			$damage += $outcome->data['total'];
 		}
 
-		$this->assertEquals(51, $damage);
+		$this->assertEquals(5940, (int) $damage);
 	}
 }
