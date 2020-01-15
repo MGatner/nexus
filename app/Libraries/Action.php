@@ -25,15 +25,23 @@ class Action
 	protected $callback;
 
 	/**
+	 * Any parameters to pass to the callback.
+	 *
+	 * @var array
+	 */
+	protected $params;
+
+	/**
 	 * Save the parameters.
 	 *
 	 * @param Unit $unit  The unit issuing this action
 	 * @param $callback   The callback to perform
 	 */
-	public function __construct(BaseUnit $unit, $callback)
+	public function __construct(BaseUnit $unit, $callback, ...$params)
 	{
 		$this->unit     = $unit;
 		$this->callback = $callback;
+		$this->params   = $params;
 	}
 
 	/**
@@ -43,6 +51,6 @@ class Action
 	 */
 	public function run()
 	{
-		return call_user_func($this->callback);
+		return call_user_func($this->callback, ...$this->params);
 	}
 }

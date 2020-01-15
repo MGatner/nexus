@@ -27,6 +27,13 @@ class Samuro extends Hero
 	protected $nextCrit = 4;
 
 	/**
+	 * Stacks towards Way of Illusion.
+	 *
+	 * @var int|null
+	 */
+	protected $illusionStacks;
+
+	/**
 	 * Create the Blademaster with an intial set of values.
 	 *
 	 * @param int $level          Current level for this hero
@@ -42,17 +49,19 @@ class Samuro extends Hero
 	 *
 	 * @param BaseUnit $unit  Anything that can be attacked
 	 */
-	public function A(BaseUnit &$unit)
+	public function A(BaseUnit $unit)
 	{
 		$damage = $this->calculateAttackDamage($unit);
+
+		$this->nextCrit--;
 
 		// WIP - process all on-hit talents & abilities
 
 		// Reschedule this action
-		$this->schedule()->push($this->current->weapons[0]->period, new Action($this, [$this, 'A', $unit]));
+		$action = new Action($this, [$this, 'A'], $unit);
+		$this->schedule()->push($this->current->weapons[0]->period, $action);
 
-		// Return the outcome
-		return $this->outcome($damage, true);
+		return $damage;
 	}
 
 	/**
@@ -63,9 +72,10 @@ class Samuro extends Hero
 
 		// WIP - spawn clones
 
-		$this->schedule()->push($this->current->abilities->basic[0], new Action($this, [$this, 'Q']));
+		$action = new Action($this, [$this, 'Q']);
+		$this->schedule()->push(SAMURO_COOLDOWN_Q, $action);
 
-		return $this->outcome(true);
+		return true;
 	}
 
 	/**
@@ -73,11 +83,12 @@ class Samuro extends Hero
 	 */
 	public function W()
 	{
-		// WIP - set nextCrit and an expiry timer
+		// WIP - set nextCrit and an expiry timer, reset AA
 		
-		$this->schedule()->push($this->current->abilities->basic[1], new Action($this, [$this, 'W']));
+		$action = new Action($this, [$this, 'W']);
+		$this->schedule()->push(SAMURO_COOLDOWN_W, $action);
 		
-		return $this->outcome(true);
+		return true;
 	}
 
 	/**
@@ -87,9 +98,10 @@ class Samuro extends Hero
 	{
 		// WIP - process talent procs
 
-		$this->schedule()->push($this->current->abilities->basic[2], new Action($this, [$this, 'E']));
+		$action = new Action($this, [$this, 'E']);
+		$this->schedule()->push(SAMURO_COOLDOWN_E, $action);
 		
-		return $this->outcome(true);
+		return true;
 	}
 
 	/**
@@ -120,6 +132,8 @@ class Samuro extends Hero
 		// Is it a critical strike?
 		if ($this->isCrit($unit))
 		{
+			$this->nextCrit = 4;
+
 			$adjusted = $result['base'] + $result['quest'];
 
 			if ($this->hasTalent('SamuroBurningBlade'))
@@ -150,6 +164,9 @@ class Samuro extends Hero
 		{
 			$result['harsh'] = $damage * 0.3;
 		}
+
+		// Tally it up
+		$result['total'] = array_sum($result);
 
 		return $result;
 	}

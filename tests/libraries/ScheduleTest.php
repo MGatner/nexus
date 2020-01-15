@@ -10,9 +10,13 @@ class ScheduleTest extends \CodeIgniter\Test\CIUnitTestCase
 	public function setUp(): void
 	{
 		parent::setUp();
-		
+
 		$this->schedule = new Schedule();
-		$this->action   = new Action(new Hero('Raynor'), 'time');
+
+		$this->raynor   = new Hero('Raynor');
+		$this->raynor->setSchedule($this->schedule);
+
+		$this->action   = new Action($this->raynor, 'time');
 	}
 
 	public function testEmptyPopReturnsNull()

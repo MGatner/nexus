@@ -22,6 +22,15 @@ class SamuroTest extends \CodeIgniter\Test\CIUnitTestCase
 		$this->assertEquals('Samu', $this->samuro->attributeId);
 	}
 
+	public function testAbilitiesReturnRawResults()
+	{
+		$result = $this->samuro->A($this->raynor);
+		$this->assertIsArray($result);
+
+		$result = $this->samuro->E();
+		$this->assertTrue($result);
+	}
+
 	public function testCanAttack()
 	{
 		$result = $this->samuro->calculateAttackDamage($this->raynor);
@@ -38,6 +47,7 @@ class SamuroTest extends \CodeIgniter\Test\CIUnitTestCase
 			'spell' => 0,
 			'armor' => 0,
 			'harsh' => 0,
+			'total' => 106.08,
 		];
 
 		$result = $this->samuro->calculateAttackDamage($this->raynor);
@@ -54,18 +64,12 @@ class SamuroTest extends \CodeIgniter\Test\CIUnitTestCase
 			'spell' => 0,
 			'armor' => 0,
 			'harsh' => 0,
+			'total' => 159.12,
 		];
 		$this->setPrivateProperty($this->samuro, 'nextCrit', 0);
 
 		$result = $this->samuro->calculateAttackDamage($this->raynor);
 
 		$this->assertEquals($expected, $result);
-	}
-
-	public function testAbilitiesCreateOutcomes()
-	{
-		$result = $this->samuro->A($this->raynor);
-
-		$this->assertInstanceOf(Outcome::class, $result);
 	}
 }

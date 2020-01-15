@@ -103,6 +103,10 @@ class Schedule
 		{
 			return null;
 		}
+		if ($this->lastId > MAX_LOOPS)
+		{
+			throw new \RuntimeException('Guard triggered to prevent infinite loops');
+		}
 
 		// Sort the Schedule and metadata
 		array_multisort($this->stamps, $this->actions, $this->ids);
