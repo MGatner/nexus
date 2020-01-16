@@ -44,6 +44,7 @@ class SamuroTest extends \CodeIgniter\Test\CIUnitTestCase
 		$expected = [
 			'base'  => 106.08,
 			'quest' => 0,
+			'crush' => 0,
 			'crit'  => 0,
 			'spell' => 0,
 			'armor' => 0,
@@ -64,6 +65,7 @@ class SamuroTest extends \CodeIgniter\Test\CIUnitTestCase
 		$expected = [
 			'base'  => 106.08,
 			'quest' => 0,
+			'crush' => 0,
 			'crit'  => 53.04,
 			'spell' => 0,
 			'armor' => 0,
@@ -89,6 +91,7 @@ class SamuroTest extends \CodeIgniter\Test\CIUnitTestCase
 		$expected = [
 			'base'  => 106.08,
 			'quest' => 0,
+			'crush' => 0,
 			'crit'  => 0,
 			'spell' => 0,
 			'armor' => -10.608,
@@ -114,6 +117,7 @@ class SamuroTest extends \CodeIgniter\Test\CIUnitTestCase
 		$expected = [
 			'base'  => 106.08,
 			'quest' => 0,
+			'crush' => 0,
 			'crit'  => 0,
 			'spell' => 0,
 			'armor' => 10.608,
@@ -137,6 +141,19 @@ class SamuroTest extends \CodeIgniter\Test\CIUnitTestCase
 		
 		$this->assertEquals('physicalArmor', $statuses[0]->type);
 		$this->assertLessThan(0, $statuses[0]->amount);
+	}
+
+	public function testCritsStackCrushingBlow()
+	{
+		$this->samuro->selectTalent('SamuroCrushingBlow');
+		$this->samuro->setCrit(0);
+
+		$this->samuro->A($this->raynor);
+
+		$statuses = $this->samuro->statuses();
+		
+		$this->assertEquals('SamuroCrushingBlow', $statuses[0]->type);
+		$this->assertEquals(1, $statuses[0]->stacks);
 	}
 
 	public function testCreateCloneCreatesHero()

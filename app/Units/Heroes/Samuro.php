@@ -49,22 +49,33 @@ class Samuro extends Hero
 	{
 		/* Process all on-hit talents & abilities first */
 
-		// Apply the armor reduction to the target
+		// Hero hits increase the duration on active clones
+		if ($unit instanceof Hero)
+		{
+			$this->reschedule('expireClones', 1);
+		}
+
+		// WotB: Apply the armor reduction to the target
 		if ($this->hasTalent('SamuroMirrorImageWayOfTheBlade') && $unit instanceof Hero)
 		{
 			$unit->addStatus($this->generateStatus('SamuroMirrorImageWayOfTheBlade'));
 		}
 
-		// Stack quest
-		if ($this->hasTalent('SamuroWayOfIllusion') && count($this->clones) && $unit instanceof Hero)
+		// WoI: Stack the quest
+		if ($this->hasTalent('SamuroWayOfIllusion') && $unit instanceof Hero && count($this->clones))
 		{
-			$statusId = $this->addStatus($this->generateStatus('SamuroWayOfIllusion'));
+			$this->addStatus($this->generateStatus('SamuroWayOfIllusion'));
 		}
 
-		// Hero hits increase the duration on active clones
-		if ($unit instanceof Hero)
+		// CB: Reduce W cooldown and stack AA damage
+		if ($this->hasTalent('SamuroCrushingBlow') && $unit instanceof Hero)
 		{
-			$this->reschedule('expireClones', 1);
+			$this->reschedule('W', -2);
+
+			if ($this->isCrit($unit))
+			{
+				$this->addStatus($this->generateStatus('SamuroCrushingBlow'));
+			}
 		}
 
 		// Calculate the damage
@@ -144,6 +155,7 @@ class Samuro extends Hero
 		$result = [
 			'base'  => 0,
 			'quest' => 0,
+			'crush' => 0,
 			'crit'  => 0,
 			'spell' => 0,
 			'armor' => 0,
@@ -162,27 +174,24 @@ class Samuro extends Hero
 		}
 
 		// Quest damage adds a flat amount
-		if ($this->hasTalent('SamuroWayOfIllusion'))
+		if ($this->hasTalent('SamuroWayOfIllusion') && $statusId = $this->hasStatus('SamuroWayOfIllusion'))
 		{
-			// Check if there are any stacks
-			if ($statusId = $this->hasStatus('SamuroWayOfIllusion'))
+			$status = $this->statuses[$statusId];
+
+			$result['quest'] = $status->stacks * $status->amount;
+
+			// If the quest is done, add the bonus
+			if ($status->stacks >= $status->maxStatus)
 			{
-				$status = $this->statuses[$statusId];
-
-				$result['quest'] = $status->stacks * $status->amount;
-
-				// If the quest is done, add the bonus
-				if ($status->stacks >= $status->maxStatus)
-				{
-					$result['quest'] += SAMURO_QUEST_BONUS;
-				}
+				$result['quest'] += SAMURO_QUEST_BONUS;
 			}
 		}
+		$adjusted = $result['base'] + $result['quest'];
 
 		// Is it a critical strike?
 		if ($this->isCrit($unit))
 		{
-			$adjusted = $result['base'] + $result['quest'];
+			/* Handle crit modifiers from level 7 talents */
 
 			if ($this->hasTalent('SamuroBurningBlade'))
 			{
@@ -194,10 +203,20 @@ class Samuro extends Hero
 					$result['spell'] += $result['clone'] * 0.5 * $count;
 				}
 			}
+
 			elseif ($this->hasTalent('SamuroPhantomPain'))
 			{
 				$result['crit'] = $adjusted * (0.5 + ($this->clones * 0.45));
 			}
+
+			elseif ($this->hasTalent('SamuroCrushingBlow') && ($statusId = $this->hasStatus('SamuroCrushingBlow')) !== null)
+			{
+				$status = $this->statuses[$statusId];
+
+				$result['crush'] = $adjusted * $status->stacks * $status->amount;
+				$result['crit']  = $adjusted * 0.5;
+			}
+
 			else
 			{
 				$result['crit'] = $adjusted * 0.5;
@@ -348,6 +367,16 @@ class Samuro extends Hero
 	{
 		switch ($name)
 		{
+			// Every time a Mirror Image Critically Strikes a Hero, Samuro gains 0.25 Attack Damage, up to 10
+			case 'SamuroWayOfIllusion':
+				return new Status([
+					'type'      => 'SamuroWayOfIllusion',
+					'stacks'    => count($this->clones),
+					'maxStacks' => 40,
+					'amount'    => 0.25,
+				]);
+			break;
+
 			// Reduce physical Armor by 5 for 2.25 seconds stacking up to 3 times
 			case 'SamuroMirrorImageWayOfTheBlade':
 				return new Status([
@@ -359,13 +388,14 @@ class Samuro extends Hero
 				]);
 			break;
 
-			// Every time a Mirror Image Critically Strikes a Hero, Samuro gains 0.25 Attack Damage, up to 10
-			case 'SamuroWayOfIllusion':
+			// Critical Strikes against enemy Heroes increase Samuro's Basic Attack damage by 15% for 4 seconds, stacking up to 3 times
+			case 'SamuroCrushingBlow':
 				return new Status([
-					'type'      => 'SamuroWayOfIllusion',
-					'stacks'    => count($this->clones),
-					'maxStacks' => 40,
-					'amount'    => 0.25,
+					'type'      => 'SamuroCrushingBlow',
+					'stacks'    => 1,
+					'maxStacks' => 3,
+					'amount'    => 0.15,
+					'duration'  => 4,
 				]);
 			break;
 		}

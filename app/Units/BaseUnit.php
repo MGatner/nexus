@@ -100,7 +100,7 @@ abstract class BaseUnit
 		$actionId = $this->actions[$method];
 		$stamp    = $this->schedule()->timestamp($actionId) + $time;
 
-		return $this->schedule()->update($actionId, $stamp);
+		return $this->schedule()->update($actionId, max(0, $stamp));
 	}
 
 	/**

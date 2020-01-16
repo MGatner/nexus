@@ -17,8 +17,10 @@ class Simulate extends BaseCommand
 	public function run(array $params = [])
     {
 		// Fetch our combatants
-		$samuro = new Samuro(1, ['SamuroMirrorImageWayOfTheBlade']);
+		$samuro = new Samuro(10, ['SamuroMirrorImageWayOfTheBlade', 'SamuroCrushingBlow']);
 		$raynor = new Hero('raynor', 20);
+
+		$samuro->schedule()->timelimit = 15;
 
 		// Pre-cast abilities in the desired order
 		$samuro->setCrit(0);
@@ -45,7 +47,7 @@ class Simulate extends BaseCommand
 			}
 		}
 
-		$thead = ['Base', 'Quest', 'Crit', 'Spell', 'Armor', 'Harsh', 'Clone', 'Total', 'Timestamp'];
+		$thead = ['Base', 'Quest', 'Crush', 'Crit', 'Spell', 'Armor', 'Harsh', 'Clone', 'Total', 'Timestamp'];
 		CLI::table($rows, $thead);
 		
 		CLI::write('Total damage: ' . number_format($total, 2), 'green');
