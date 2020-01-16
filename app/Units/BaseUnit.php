@@ -8,18 +8,11 @@ use App\Libraries\Status;
 abstract class BaseUnit
 {
 	/**
-	 * Default data for this instance.
+	 * Current set of game data for this instance.
 	 *
 	 * @var object
 	 */
-	protected $default;
-
-	/**
-	 * Current data for this instance.
-	 *
-	 * @var object
-	 */
-	protected $current;
+	protected $data;
 
 	/**
 	 * This unit's active statuses.
@@ -34,9 +27,19 @@ abstract class BaseUnit
 	 * @var Queue
 	 */
 	private $schedule;
+
+	/**
+	 * IDs for active Actions for each ability
+	 *
+	 * @var array
+	 */
+	public $actions = [];
 	
 	// Lazy load data from the source
 	abstract protected function ensureData();
+	
+	// Reset any statuses and restore data to the defaults
+	abstract public function reset();
 
 	/**
 	 * Assign a schedule.
@@ -54,17 +57,50 @@ abstract class BaseUnit
 
 	/**
 	 * Load (if necessary) and return this unit's schedule.
+	 * If given parameters use them to schedule an immediate Action
+	 *
+	 * @param string $method  This unit's method to call
+	 * @param int $time       Seconds in the future to schedule the action
 	 *
 	 * @return Schedule
 	 */
-	public function schedule(): Schedule
+	public function schedule(string $method = null, int $time = 0, ...$params): Schedule
 	{
 		if ($this->schedule === null)
 		{
 			$this->schedule = \Config\Services::schedule(true);
 		}
 		
+		if (! empty($method))
+		{
+			$action = new Action($this, [$this, $method], ...$params);
+
+			// Schedule the action and store its ID by method in case we need to access it
+			$this->actions[$method] = $this->schedule->push($time, $action);
+		}
+		
 		return $this->schedule;
+	}
+
+	/**
+	 * Alter the time of an action, if it exists in this unit's schedule.
+	 *
+	 * @param string $method  This unit's method to call
+	 * @param int $time       Change in seconds
+	 *
+	 * @return bool
+	 */
+	public function reschedule(string $method, int $time): bool
+	{
+		if (! isset($this->actions[$method]))
+		{
+			return false;
+		}
+		
+		$actionId = $this->actions[$method];
+		$stamp    = $this->schedule()->timestamp($actionId) + $time;
+
+		return $this->schedule()->update($actionId, $stamp);
 	}
 
 	/**
@@ -74,7 +110,7 @@ abstract class BaseUnit
 	 *
 	 * @return string  Path to the latest patch matching $file
 	 */
-    public function getPath($file): string
+    protected function getPath($file): string
     {
     	if (! is_dir(HEROES_DATA_PATH))
     	{
@@ -89,23 +125,6 @@ abstract class BaseUnit
     	}
     	
     	return end($files);
-    }
-
-	/**
-	 * Resets data to their defaults and clears all statuses.
-	 *
-	 * @return $this
-	 */
-    public function reset(): self
-    {
-    	$this->current = clone $this->default;
-
-		foreach ($this->statuses as $statusId => $status)
-		{
-			$this->removeStatus($statusId);
-		}
-
-    	return $this;
     }
 
 	/**
@@ -244,7 +263,7 @@ abstract class BaseUnit
     {
     	$this->ensureData();
     	
-    	return $this->current->$name;
+    	return $this->data->$name;
     }
 
 	/**
@@ -258,7 +277,7 @@ abstract class BaseUnit
 	{
     	$this->ensureData();
 
-		return isset($this->current->$name);
+		return isset($this->data->$name);
 	}
 
 	/**
@@ -273,7 +292,7 @@ abstract class BaseUnit
     {
     	$this->ensureData();
     	
-    	$this->current->$name = $value;
+    	$this->data->$name = $value;
     	
     	return $this;
     }

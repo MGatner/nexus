@@ -13,14 +13,14 @@ class HeroTest extends \CodeIgniter\Test\CIUnitTestCase
 	
 	public function testDefaultDataIsNull()
 	{
-		$this->assertNull($this->getPrivateProperty($this->hero, 'default'));
+		$this->assertNull($this->getPrivateProperty($this->hero, 'data'));
 	}
 	
 	public function testEnsureDataLoadsData()
 	{
 		isset($this->hero->foobar);
 
-		$this->assertNotNull($this->getPrivateProperty($this->hero, 'default'));
+		$this->assertNotNull($this->getPrivateProperty($this->hero, 'data'));
 	}
 	
 	public function testEnsureDataLoadsCorrectData()
@@ -33,6 +33,16 @@ class HeroTest extends \CodeIgniter\Test\CIUnitTestCase
 		$this->hero->gender = 'Female';
 
 		$this->assertEquals('Female', $this->hero->gender);
+	}
+	
+	public function testHasOwnData()
+	{
+		$hero1 = new Hero('Raynor');
+		$hero2 = new Hero('Raynor');
+		
+		$hero1->ratings->damage = 1;
+
+		$this->assertNotEquals($hero2->ratings->damage, $hero1->ratings->damage);
 	}
 	
 	public function testCanChangeNestedData()

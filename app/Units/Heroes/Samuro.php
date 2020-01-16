@@ -2,6 +2,7 @@
 
 use App\Libraries\Action;
 use App\Libraries\Outcome;
+use App\Libraries\Status;
 use App\Units\BaseUnit;
 use App\Units\Hero;
 
@@ -27,13 +28,6 @@ class Samuro extends Hero
 	protected $nextCrit;
 
 	/**
-	 * Stacks towards Way of Illusion.
-	 *
-	 * @var int|null
-	 */
-	protected $illusionStacks;
-
-	/**
 	 * Create the Blademaster with an intial set of values.
 	 *
 	 * @param int $level          Current level for this hero
@@ -53,21 +47,35 @@ class Samuro extends Hero
 	 */
 	public function A(BaseUnit $unit)
 	{
-		$damage = $this->calculateAttackDamage($unit);
+		/* Process all on-hit talents & abilities first */
 
-		$this->nextCrit ? $this->nextCrit-- : $this->setCrit();
-
-		// Reduce physical Armor by 5 for 2.25 seconds stacking up to 3 times
-		if ($this->hasTalent('SamuroMirrorImageWayOfTheBlade'))
+		// Apply the armor reduction to the target
+		if ($this->hasTalent('SamuroMirrorImageWayOfTheBlade') && $unit instanceof Hero)
 		{
-			
+			$unit->addStatus($this->generateStatus('SamuroMirrorImageWayOfTheBlade'));
 		}
 
-		// WIP - process all on-hit talents & abilities
+		// Stack quest
+		if ($this->hasTalent('SamuroWayOfIllusion') && count($this->clones) && $unit instanceof Hero)
+		{
+			$statusId = $this->addStatus($this->generateStatus('SamuroWayOfIllusion'));
+		}
 
+		// Hero hits increase the duration on active clones
+		if ($unit instanceof Hero)
+		{
+			$this->reschedule('expireClones', 1);
+		}
+
+		// Calculate the damage
+		$damage = $this->calculateAttackDamage($unit);
+		
+		// Update the crit counter
+		$this->nextCrit ? $this->nextCrit-- : $this->setCrit();
+		
 		// Reschedule this action
 		$action = new Action($this, [$this, 'A'], $unit);
-		$this->schedule()->push($this->current->weapons[0]->period, $action);
+		$this->actions['A'] = $this->schedule()->push($this->data->weapons[0]->period, $action);
 
 		return $damage;
 	}
@@ -77,11 +85,14 @@ class Samuro extends Hero
 	 */
 	public function Q()
 	{
+		// Clear current clones and create two new ones
+		$this->clones = [$this->createClone(), $this->createClone()];
 
-		// WIP - spawn clones
+		// Schedule the clones to expire
+		$this->schedule('expireClones', SAMURO_CLONE_DURATION);
 
-		$action = new Action($this, [$this, 'Q']);
-		$this->schedule()->push(SAMURO_COOLDOWN_Q, $action);
+		// Reschedule this ability so it happens on cooldown
+		$this->schedule('Q', SAMURO_COOLDOWN_Q);
 
 		return true;
 	}
@@ -91,10 +102,18 @@ class Samuro extends Hero
 	 */
 	public function W()
 	{
-		// WIP - set nextCrit and an expiry timer, reset AA
+		// Queue a crit on next auto
+		$this->setCrit(0);
 		
-		$action = new Action($this, [$this, 'W']);
-		$this->schedule()->push(SAMURO_COOLDOWN_W, $action);
+		// Reset attack timer to half the weapon period
+		if (isset($this->actions['A']))
+		{
+			$stamp = $this->schedule()->timestamp() + $this->data->weapons[0]->period / 2;
+			$this->schedule()->update($this->actions['A'], $stamp);
+		}
+
+		// Reschedule this ability so it happens on cooldown
+		$this->schedule('W', SAMURO_COOLDOWN_W);
 		
 		return true;
 	}
@@ -106,9 +125,9 @@ class Samuro extends Hero
 	{
 		// WIP - process talent procs
 
-		$action = new Action($this, [$this, 'E']);
-		$this->schedule()->push(SAMURO_COOLDOWN_E, $action);
-		
+		// Reschedule this ability so it happens on cooldown
+		$this->schedule('E', SAMURO_COOLDOWN_E);
+
 		return true;
 	}
 
@@ -129,19 +148,34 @@ class Samuro extends Hero
 			'spell' => 0,
 			'armor' => 0,
 			'harsh' => 0,
+			'clone' => 0,
 			'total' => 0,
 		];
 
 		// Scaled base = damage * (scaling ^ level)
 		$result['base'] = $this->weapons[0]->damage * pow(1 + $this->weapons[0]->damageScale, $this->level);
 
+		// Clones have their own base
+		foreach ($this->clones as $clone)
+		{
+			$result['clone'] += $clone->weapons[0]->damage * pow(1 + $clone->weapons[0]->damageScale, $this->level);
+		}
+
 		// Quest damage adds a flat amount
 		if ($this->hasTalent('SamuroWayOfIllusion'))
 		{
-			$result['quest'] = min(10, 0.25 * $this->illusionStacks);
-			if ($this->illusionStacks >= 40)
+			// Check if there are any stacks
+			if ($statusId = $this->hasStatus('SamuroWayOfIllusion'))
 			{
-				$result['quest'] += 20;
+				$status = $this->statuses[$statusId];
+
+				$result['quest'] = $status->stacks * $status->amount;
+
+				// If the quest is done, add the bonus
+				if ($status->stacks >= $status->maxStatus)
+				{
+					$result['quest'] += SAMURO_QUEST_BONUS;
+				}
 			}
 		}
 
@@ -153,6 +187,12 @@ class Samuro extends Hero
 			if ($this->hasTalent('SamuroBurningBlade'))
 			{
 				$result['spell'] = $result['crit'] = $adjusted * 0.5;
+
+				// Clones proc their own BB
+				if ($count = count($this->clones))
+				{
+					$result['spell'] += $result['clone'] * 0.5 * $count;
+				}
 			}
 			elseif ($this->hasTalent('SamuroPhantomPain'))
 			{
@@ -161,16 +201,23 @@ class Samuro extends Hero
 			else
 			{
 				$result['crit'] = $adjusted * 0.5;
-			}			
+			}
+
+			// Clones get crits too
+			if ($count = count($this->clones))
+			{
+				$result['clone'] += $result['clone'] * 0.5;
+			}
 		}
 
 		// Calculate the total so far
 		$damage = $result['base'] + $result['quest'] + $result['crit'];
 
 		// Account for armor
-		if (! empty($unit->physicalArmor))
+		if (($statusId = $unit->hasStatus('physicalArmor')) !== null)
 		{
-			$result['armor'] = $damage * $unit->physicalArmor / 100 * -1;
+			$status = $unit->statuses()[$statusId];
+			$result['armor'] = -1 * $damage * ($status->stacks * $status->amount);
 		}
 		
 		// Harsh Winds is straight % increase
@@ -183,6 +230,52 @@ class Samuro extends Hero
 		$result['total'] = array_sum($result);
 
 		return $result;
+	}
+
+	/**
+	 * Create a clone.
+	 *
+	 * @return Hero
+	 */
+	public function createClone(): Hero
+	{
+		$schedule = $this->schedule();
+
+		$clone = new Hero('Samuro');
+		$clone->setSchedule($schedule);
+		
+		// Clones scale the same but deal less damage
+		$clone->weapons[0]->damage = $this->hasTalent('SamuroIllusionMaster') ? SAMURO_CLONE_DAMAGE * 2 : SAMURO_CLONE_DAMAGE;
+
+		// Clones have effective 50% health without Three Blade Style
+		if (! $this->hasTalent('SamuroThreeBladeStyle'))
+		{
+			$clone->life->amount = $this->life->amount * 0.5;
+		}
+
+		return $clone;
+	}
+
+	/**
+	 * Remove any clones.
+	 *
+	 * @return $this
+	 */
+	public function expireClones(): self
+	{
+		$this->clones = [];
+
+		return $this;
+	}
+
+	/**
+	 * Return the number of active clones.
+	 *
+	 * @return int
+	 */
+	protected function cloneCount(): int
+	{
+		return count($this->clones);
 	}
 
 	/**
@@ -216,7 +309,7 @@ class Samuro extends Hero
 		// If no number was passed then set it based off talents
 		if ($num === null)
 		{
-			$num = $this->hasTalent('SamuroMirrorImageWayOfTheBlade') ? 3 : 4;
+			$num = $this->hasTalent('SamuroMirrorImageWayOfTheBlade') ? 2 : 3;
 		}
 		$this->nextCrit = $num;
 
@@ -237,11 +330,46 @@ class Samuro extends Hero
 		switch ($nameId)
 		{
 			case 'SamuroWayOfIllusion':
-				// WIP - need to implement stacking
-				$this->illusionStacks = 40;
+				
 			break;
 		}
 
 		return $this;
+	}
+
+	/**
+	 * Generates the appropriate Status to go along with an ability or talent.
+	 *
+	 * @param string $name  name of the target
+	 *
+	 * @return Status
+	 */
+	public function generateStatus(string $name): Status
+	{
+		switch ($name)
+		{
+			// Reduce physical Armor by 5 for 2.25 seconds stacking up to 3 times
+			case 'SamuroMirrorImageWayOfTheBlade':
+				return new Status([
+					'type'      => 'physicalArmor',
+					'stacks'    => 1,
+					'maxStacks' => 3,
+					'amount'    => -0.05,
+					'duration'  => 2.25,
+				]);
+			break;
+
+			// Every time a Mirror Image Critically Strikes a Hero, Samuro gains 0.25 Attack Damage, up to 10
+			case 'SamuroWayOfIllusion':
+				return new Status([
+					'type'      => 'SamuroWayOfIllusion',
+					'stacks'    => count($this->clones),
+					'maxStacks' => 40,
+					'amount'    => 0.25,
+				]);
+			break;
+		}
+
+		throw new \RuntimeException('Unknown status requested: ' . $name);
 	}
 }

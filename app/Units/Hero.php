@@ -26,18 +26,7 @@ class Hero extends BaseUnit
 	 *
 	 * @var array
 	 */
-	public $talented;
-
-	/**
-	 * IDs for active Actions for each ability
-	 *
-	 * @var array
-	 */
-	public $actions = [];
-
-	//--------------------------------------------------------------------
-	// Statuses
-	//--------------------------------------------------------------------
+	public $talented = [];
 
 	/**
 	 * Current level of the hero.
@@ -45,20 +34,6 @@ class Hero extends BaseUnit
 	 * @var int
 	 */
 	public $level;
-
-	/**
-	 * Current physical armor.
-	 *
-	 * @var int
-	 */
-	public $physicalArmor = 0;
-
-	/**
-	 * Current spell armor.
-	 *
-	 * @var int
-	 */
-	public $spellArmor = 0;
 
 	/**
 	 * Create the hero with an intial set of values.
@@ -71,7 +46,8 @@ class Hero extends BaseUnit
 	{
 		$this->cHeroId  = $cHeroId;
 		$this->level    = $level;
-		$this->talented = $talented;
+
+		$this->talents($talented);
 	}
 
 	/**
@@ -80,7 +56,7 @@ class Hero extends BaseUnit
 	protected function ensureData(): void
 	{
 		// If the data is there then all is well
-		if ($this->default)
+		if ($this->data)
     	{
     		return;
     	}
@@ -92,17 +68,57 @@ class Hero extends BaseUnit
 			$json = file_get_contents($path);
 			self::$master = json_decode($json);
 		}
+
+		// Clone the master data to the current set
+		/*
+		* WIP - `clone` doesn't dereference sub-objects, hack it with serializing for now
+		* $this->data = clone self::$master->{$this->cHeroId};
+		*/
+		$this->data = unserialize(serialize(self::$master->{$this->cHeroId}));
+	}
+
+	/**
+	 * Resets data to their defaults and clears all statuses.
+	 *
+	 * @return $this
+	 */
+    public function reset()
+    {
+    	$this->data = unserialize(serialize(self::$master->{$this->cHeroId}));
+
+		$this->talented = [];
 		
-		// Point this instance's data at the specified hero
-		$this->default = self::$master->{$this->cHeroId};
-		
-		// Clone the default to start the current set
-		$this->current = clone $this->default;
+		foreach ($this->statuses as $statusId => $status)
+		{
+			$this->removeStatus($statusId);
+		}
+
+    	return $this;
+    }
+
+	/**
+	 * Add each talent to the list of selected talents.
+	 * WIP - probably needs to check for talent removal or something
+	 *
+	 * @param string $nameId  nameId of the target talent
+	 *
+	 * @return $this
+	 */
+	public function talents(array $talents)
+	{
+		$this->talented = [];
+
+		foreach ($talents as $nameId)
+		{
+			$this->selectTalent($nameId);
+		}
+
+		return $this;
 	}
 
 	/**
 	 * Add a talent to the list of selected talents.
-	 * Should be overridden by indivudal heroes for specifics.
+	 * Should be overridden by individual heroes for specifics.
 	 *
 	 * @param string $nameId  nameId of the target talent
 	 *

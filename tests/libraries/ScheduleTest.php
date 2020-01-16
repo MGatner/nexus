@@ -95,8 +95,68 @@ class ScheduleTest extends \CodeIgniter\Test\CIUnitTestCase
 	{
 		$this->schedule->push(10, $this->action);
 
-		$outcome  = $this->schedule->pop();
+		$outcome = $this->schedule->pop();
 
 		$this->assertCloseEnough(time(), $outcome->data);
+	}
+
+	public function testCancelCancels()
+	{
+		$actionId = $this->schedule->push(10, $this->action);
+		
+		$result = $this->schedule->cancel($actionId);
+		
+		$this->assertTrue($result);
+		$this->assertCount(0, $this->getPrivateProperty($this->schedule, 'actions'));
+	}
+
+	public function testCancelMissingActionReturnsFalse()
+	{
+		$this->schedule->push(10, $this->action);
+		
+		$result = $this->schedule->cancel(808);
+		
+		$this->assertFalse($result);
+	}
+
+	public function testUpdateSetsNewStamp()
+	{
+		$actionId = $this->schedule->push(10, $this->action);
+		
+		$result = $this->schedule->update($actionId, 20);
+		$this->assertTrue($result);
+		
+		$this->schedule->pop();
+		
+		$this->assertEquals(20, $this->schedule->timestamp());
+	}
+
+	public function testUpdateMissingActionReturnsFalse()
+	{
+		$this->schedule->push(10, $this->action);
+		
+		$result = $this->schedule->update(808, 20);
+		
+		$this->assertFalse($result);
+	}
+
+	public function testParameterPushesImmediateAction()
+	{
+		$this->raynor->schedule('statuses');
+
+		$outcome = $this->schedule->pop();
+
+		$this->assertEquals([], $outcome->data);
+	}
+
+	public function testRescheduleIncreasesTime()
+	{
+		$this->raynor->schedule('statuses', 10);
+
+		$this->raynor->reschedule('statuses', 5);
+
+		$this->schedule->pop();
+
+		$this->assertEquals(15, $this->schedule->timestamp());
 	}
 }

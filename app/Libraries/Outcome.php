@@ -52,7 +52,7 @@ class Outcome
 		$this->data      = $data;
 		
 		// If $keep wasn't specified then check for data that seems relevent
-		if ($keep === null && ! is_bool($data))
+		if ($keep === null && in_array(gettype($data), ['array', 'string', 'integer', 'double']))
 		{
 			$this->keep = true;
 		}

@@ -78,17 +78,22 @@ defined('EXIT__AUTO_MAX')      || define('EXIT__AUTO_MAX', 125); // highest auto
 
 /*
 |--------------------------------------------------------------------------
-| Samuro Defined
+| Samuro
 |
-| These values will eventually be aprsed from the game data but are
-| here now for convenience.
+| These values will eventually be parsed from the game data
+| but are here now for convenience.
 |--------------------------------------------------------------------------
 */
+defined('SAMURO_QUEST_BONUS')    || define('SAMURO_QUEST_BONUS', 20);
+
 defined('SAMURO_COOLDOWN_Q')  || define('SAMURO_COOLDOWN_Q', 14);
 defined('SAMURO_COOLDOWN_W')  || define('SAMURO_COOLDOWN_W', 10);
 defined('SAMURO_COOLDOWN_E')  || define('SAMURO_COOLDOWN_E', 15);
 defined('SAMURO_COOLDOWN_R1') || define('SAMURO_COOLDOWN_R1', 25);
 defined('SAMURO_COOLDOWN_R2') || define('SAMURO_COOLDOWN_R2', 8);
+
+defined('SAMURO_CLONE_DURATION') || define('SAMURO_CLONE_DURATION', 8);
+defined('SAMURO_CLONE_DAMAGE')   || define('SAMURO_CLONE_DAMAGE', 11);
 
 /*
 |--------------------------------------------------------------------------
@@ -99,4 +104,4 @@ defined('SAMURO_COOLDOWN_R2') || define('SAMURO_COOLDOWN_R2', 8);
 defined('HEROES_DATA_PATH') || define('HEROES_DATA_PATH', ROOTPATH . 'vendor/heroestoolchest/heroes-data/heroesdata/');
 
 // Safeguard to prevent endless loops
-defined('MAX_LOOPS') || define('MAX_LOOPS', 1000000);
+defined('MAX_LOOPS') || define('MAX_LOOPS', 20000);

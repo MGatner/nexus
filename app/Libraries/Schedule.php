@@ -54,12 +54,21 @@ class Schedule
 
 	/**
 	 * Return the current simulated timestamp.
+	 * If passed an action ID return that action's timestamp instead.
 	 *
 	 * @return float
 	 */
-	public function timestamp(): float
+	public function timestamp(int $actionId = null): float
 	{
-		return $this->timestamp;
+		if ($actionId === null)
+		{
+			return $this->timestamp;
+		}
+		
+		// Look up the index for this action
+		$i = array_search($actionId, $this->ids);
+		
+		return $this->stamps[$i];
 	}
 
 	/**
@@ -81,9 +90,6 @@ class Schedule
 
 		// Schedule it
 		$this->stamps[] = $this->timestamp + $time;
-
-		// Notify that the schedule is no longer necessarily in order
-		$this->sorted = false;
 		
 		return $this->lastId;
 	}
@@ -135,14 +141,15 @@ class Schedule
 	 */
 	public function cancel(int $actionId): bool
 	{
-		if ($i = array_search($actionId, $this->ids))
+		$i = array_search($actionId, $this->ids);
+		if ($i === false)
 		{
-			unset($this->ids[$i], $this->actions[$i], $this->stamps[$i]);
-
-			return true;
+			return false;
 		}
 
-		return false;
+		unset($this->ids[$i], $this->actions[$i], $this->stamps[$i]);
+
+		return true;
 	}
 
 	/**
@@ -155,13 +162,15 @@ class Schedule
 	 */
 	public function update(int $actionId, float $stamp): bool
 	{
-		if ($i = array_search($actionId, $this->ids))
-		{
-			$this->stamps[$i] = $stamp;
+		$i = array_search($actionId, $this->ids);
 
-			return true;
+		if ($i === false)
+		{
+			return false;
 		}
 
-		return false;
+		$this->stamps[$i] = $stamp;
+
+		return true;
 	}
 }

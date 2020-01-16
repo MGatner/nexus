@@ -29,9 +29,10 @@ class BasicSimulationTest extends \CodeIgniter\Test\CIUnitTestCase
 	{
 		$this->schedule->timelimit = 30;
 
-		$this->samuro->A($this->raynor);
+		$this->samuro->schedule('A', 0, $this->raynor);
 
-		while ($this->schedule->pop()) {
+		while ($this->schedule->pop())
+		{
 		}
 
 		$this->assertEquals(30, $this->schedule->timestamp());
@@ -41,9 +42,9 @@ class BasicSimulationTest extends \CodeIgniter\Test\CIUnitTestCase
 	{
 		$this->schedule->timelimit = 30;
 
-		$this->samuro->A($this->raynor);
-		$count = 1;
+		$this->samuro->schedule('A', 0, $this->raynor);
 
+		$count = 0;
 		while ($this->schedule->pop())
 		{
 			$count++;
@@ -56,14 +57,32 @@ class BasicSimulationTest extends \CodeIgniter\Test\CIUnitTestCase
 	{
 		$this->schedule->timelimit = 30;
 
-		$data   = $this->samuro->A($this->raynor);
-		$damage = $data['total'];
+		$this->samuro->schedule('A', 0, $this->raynor);
 
+		$damage = 0;
 		while ($outcome = $this->schedule->pop())
 		{
 			$damage += $outcome->data['total'];
 		}
 
-		$this->assertEquals(5940, (int) $damage);
+		$this->assertEquals(6046, (int) $damage);
+	}
+
+	public function testBurningBlade()
+	{
+		$this->schedule->timelimit = 30;
+
+		$this->samuro->level = 20;
+		$this->samuro->selectTalent('SamuroBurningBlade');
+		
+		$this->samuro->schedule('A', 0, $this->raynor);
+
+		$damage = 0;
+		while ($outcome = $this->schedule->pop())
+		{
+			$damage += $outcome->data['spell'];
+		}
+
+		$this->assertEquals(1340, (int) $damage);
 	}
 }

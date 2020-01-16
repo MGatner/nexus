@@ -57,6 +57,22 @@ class StatusTest extends \CodeIgniter\Test\CIUnitTestCase
 		$this->assertEquals(3, $status->stacks);
 	}
 
+	public function testStacksRespectMax()
+	{
+		$this->status->stacks    = 1;
+		$this->status->maxStacks = 2;
+
+		$this->raynor->addStatus(clone $this->status);
+		$this->raynor->addStatus(clone $this->status);
+		$this->raynor->addStatus(clone $this->status);
+
+		$statuses = $this->raynor->statuses();
+		$this->assertCount(1, $statuses);
+	
+		$status = reset($statuses);
+		$this->assertEquals(2, $status->stacks);
+	}
+
 	public function testNonStackingReplaces()
 	{
 		$this->raynor->addStatus(clone $this->status);
