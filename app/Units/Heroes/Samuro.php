@@ -113,6 +113,17 @@ class Samuro extends Hero
 	 */
 	public function W()
 	{
+		// Don't case it if there's already a crit about to happen - better to hold and reset the next AA
+		if ($this->nextCrit < 2)
+		{
+			$this->schedule('W', 1);
+
+			return false;
+		}
+
+		// Reschedule this ability so it happens on cooldown
+		$this->schedule('W', SAMURO_COOLDOWN_W);
+
 		// Queue a crit on next auto
 		$this->setCrit(0);
 		

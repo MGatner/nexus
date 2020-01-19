@@ -17,10 +17,10 @@ class Simulate extends BaseCommand
 	public function run(array $params = [])
     {
 		// Fetch our combatants
-		$samuro = new Samuro(10, ['SamuroMirrorImageWayOfTheBlade', 'SamuroCrushingBlow']);
+		$samuro = new Samuro(20, ['SamuroMirrorImageWayOfTheBlade', 'SamuroCrushingBlow']);
 		$raynor = new Hero('raynor', 20);
 
-		$samuro->schedule()->timelimit = 15;
+		$samuro->schedule()->timelimit = 20;
 
 		// Pre-cast abilities in the desired order
 		$samuro->setCrit(0);
