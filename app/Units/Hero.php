@@ -97,6 +97,16 @@ class Hero extends BaseUnit
     }
 
 	/**
+	 * Returns this hero's cHeroId.
+	 *
+	 * @return string
+	 */
+    public function name(): string
+    {
+    	return $this->cHeroId;
+    }
+
+	/**
 	 * Add each talent to the list of selected talents.
 	 * WIP - probably needs to check for talent removal or something
 	 *

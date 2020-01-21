@@ -25,6 +25,15 @@ to install it and manage dependencies.
 2. Rename **env** to **.env**, uncomment and fill `app.baseURL`
 3. Install the framework, modules, and dependencies: `composer install`
 
+## Database
+
+The command line interface does not require a database, but if you want to use the web
+interface there are some additional steps to configure a database.
+
+1. Fill in `database.*` in your **.env** file (skip if using default SQLite3)
+2. Migrate the database: `php spark migrate -all`
+3. Seed the database: `php spark db:seed InitialSeeder`
+
 ## Running
 
 Point the web server to the **public** directory in the project root. For development you
