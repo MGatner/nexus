@@ -133,6 +133,24 @@ class Schedule
 	}
 
 	/**
+	 * Get the timestamp for the scheduled action.
+	 *
+	 * @param int $actionId  ID of the scheduled action to cancel
+	 *
+	 * @return float  Timestamp of the scheduled action
+	 */
+	public function read(int $actionId): float
+	{
+		$i = array_search($actionId, $this->ids);
+		if ($i === false)
+		{
+			return false;
+		}
+
+		return $this->stamps[$i];
+	}
+
+	/**
 	 * Cancel an action.
 	 *
 	 * @param int $actionId  ID of the scheduled action to cancel

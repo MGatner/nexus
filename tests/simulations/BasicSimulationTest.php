@@ -50,7 +50,7 @@ class BasicSimulationTest extends \CodeIgniter\Test\CIUnitTestCase
 			$count++;
 		}
 
-		$this->assertEquals(52, $count);
+		$this->assertEquals(51, $count);
 	}
 
 	public function testExpectedDamage()
@@ -65,7 +65,7 @@ class BasicSimulationTest extends \CodeIgniter\Test\CIUnitTestCase
 			$damage += $outcome->data['total'];
 		}
 
-		$this->assertEquals(6205, (int) $damage);
+		$this->assertEquals(6046, (int) $damage);
 	}
 
 	public function testBurningBlade()
@@ -83,6 +83,6 @@ class BasicSimulationTest extends \CodeIgniter\Test\CIUnitTestCase
 			$damage += $outcome->data['spell'];
 		}
 
-		$this->assertEquals(1452, (int) $damage);
+		$this->assertEquals(1340, (int) $damage);
 	}
 }
