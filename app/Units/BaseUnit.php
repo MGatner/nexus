@@ -60,11 +60,11 @@ abstract class BaseUnit
 	 * If given parameters use them to schedule an immediate Action
 	 *
 	 * @param string $method  This unit's method to call
-	 * @param int $time       Seconds in the future to schedule the action
+	 * @param float  $time    Seconds in the future to schedule the action
 	 *
 	 * @return Schedule
 	 */
-	public function schedule(string $method = null, int $time = 0, ...$params): Schedule
+	public function schedule(string $method = null, float $time = 0, ...$params): Schedule
 	{
 		if ($this->schedule === null)
 		{
@@ -74,6 +74,7 @@ abstract class BaseUnit
 		if (! empty($method))
 		{
 			$action = new Action($this, [$this, $method], ...$params);
+			$time   = max(0, $time);
 
 			// Schedule the action and store its ID by method in case we need to access it
 			$this->actions[$method] = $this->schedule->push($time, $action);
@@ -86,11 +87,11 @@ abstract class BaseUnit
 	 * Alter the time of an action, if it exists in this unit's schedule.
 	 *
 	 * @param string $method  This unit's method to call
-	 * @param int $time       Change in seconds
+	 * @param float $time     Change in seconds
 	 *
 	 * @return bool
 	 */
-	public function reschedule(string $method, int $time): bool
+	public function reschedule(string $method, float $time): bool
 	{
 		if (! isset($this->actions[$method]))
 		{
@@ -99,6 +100,9 @@ abstract class BaseUnit
 		
 		$actionId = $this->actions[$method];
 		$stamp    = $this->schedule()->timestamp($actionId) + $time;
+		
+		// Don't allow scheduling before the current timestamp
+		$stamp = max($this->schedule()->timestamp(), $stamp);
 
 		return $this->schedule()->update($actionId, max(0, $stamp));
 	}
@@ -225,6 +229,31 @@ abstract class BaseUnit
 		}
 
 		return $statusId;
+	}
+
+	/**
+	 * Return this unit's attack interval.
+	 *
+	 * @return float|null
+	 */
+	public function attackPeriod(): ?float
+	{
+		if (empty($this->data->weapons))
+		{
+			return null;
+		}
+
+		$weapon = reset($this->data->weapons);
+		$period = $weapon->period;
+
+		// Get any attack speed modifiers
+		if (($statusId = $this->hasStatus('attackSpeed')) !== null)
+		{
+			$status = $this->statuses[$statusId];
+			$period = $period / (1 + $status->stacks * $status->amount);
+		}
+
+		return $period;
 	}
 
 	/**

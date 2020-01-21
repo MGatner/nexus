@@ -1,5 +1,6 @@
 <?php
 
+use App\Libraries\Status;
 use App\Units\Hero;
 
 class HeroTest extends \CodeIgniter\Test\CIUnitTestCase
@@ -74,5 +75,42 @@ class HeroTest extends \CodeIgniter\Test\CIUnitTestCase
 
 		$this->assertTrue($this->hero->hasTalent('talent2'));
 		$this->assertFalse($this->hero->hasTalent('talent9'));
+	}
+
+	public function testAttackPeriodMatches()
+	{
+		$expected = $this->hero->weapons[0]->period;
+
+		$this->assertEquals($expected, $this->hero->attackPeriod());
+	}
+
+	public function testAttackSpeedReducesPeriod()
+	{
+		$modifier = 0.20;
+
+		$status = new Status([
+			'type'      => 'attackSpeed',
+			'stacks'    => 1,
+			'amount'    => $modifier,
+		]);
+		
+		$this->hero->addStatus($status);
+
+		$this->assertLessThan($this->hero->weapons[0]->period, $this->hero->attackPeriod());
+	}
+
+	public function testAttackSpeedIncreasesPeriod()
+	{
+		$modifier = -0.20;
+
+		$status = new Status([
+			'type'      => 'attackSpeed',
+			'stacks'    => 1,
+			'amount'    => $modifier,
+		]);
+		
+		$this->hero->addStatus($status);
+
+		$this->assertGreaterThan($this->hero->weapons[0]->period, $this->hero->attackPeriod());
 	}
 }
