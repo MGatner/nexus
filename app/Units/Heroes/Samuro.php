@@ -62,7 +62,7 @@ class Samuro extends Hero
 		}
 
 		// WoI: Stack the quest
-		if ($this->hasTalent('SamuroWayOfIllusion') && $unit instanceof Hero && count($this->clones))
+		if ($this->hasTalent('SamuroWayOfIllusion') && $unit instanceof Hero && $this->isCrit($unit) && count($this->clones))
 		{
 			$this->addStatus($this->generateStatus('SamuroWayOfIllusion'));
 		}
@@ -78,6 +78,12 @@ class Samuro extends Hero
 			}
 		}
 
+		// PtA: Increase attack speed
+		if ($this->hasTalent('SamuroPressTheAttack') && $unit instanceof Hero)
+		{
+			$this->addStatus($this->generateStatus('SamuroPressTheAttack'));
+		}
+
 		// Calculate the damage
 		$damage = $this->calculateAttackDamage($unit);
 		
@@ -86,7 +92,7 @@ class Samuro extends Hero
 		
 		// Reschedule this action
 		$action = new Action($this, [$this, 'A'], $unit);
-		$this->actions['A'] = $this->schedule()->push($this->data->weapons[0]->period, $action);
+		$this->actions['A'] = $this->schedule()->push($this->attackPeriod(), $action);
 
 		return $damage;
 	}
@@ -113,16 +119,13 @@ class Samuro extends Hero
 	 */
 	public function W()
 	{
-		// Don't case it if there's already a crit about to happen - better to hold and reset the next AA
-		if ($this->nextCrit < 2)
+		// Don't cast it if there's already a crit about to happen - better to hold and reset the next AA
+		if ($this->nextCrit < 1)
 		{
-			$this->schedule('W', 1);
+			$this->schedule('W', 0.1);
 
 			return false;
 		}
-
-		// Reschedule this ability so it happens on cooldown
-		$this->schedule('W', SAMURO_COOLDOWN_W);
 
 		// Queue a crit on next auto
 		$this->setCrit(0);
@@ -130,7 +133,7 @@ class Samuro extends Hero
 		// Reset attack timer to half the weapon period
 		if (isset($this->actions['A']))
 		{
-			$stamp = $this->schedule()->timestamp() + $this->data->weapons[0]->period / 2;
+			$stamp = $this->schedule()->timestamp() + $this->attackPeriod() / 2;
 			$this->schedule()->update($this->actions['A'], $stamp);
 		}
 
@@ -185,7 +188,7 @@ class Samuro extends Hero
 		}
 
 		// Quest damage adds a flat amount
-		if ($this->hasTalent('SamuroWayOfIllusion') && $statusId = $this->hasStatus('SamuroWayOfIllusion'))
+		if ($this->hasTalent('SamuroWayOfIllusion') && ($statusId = $this->hasStatus('SamuroWayOfIllusion')) !== false)
 		{
 			$status = $this->statuses[$statusId];
 
@@ -347,6 +350,23 @@ class Samuro extends Hero
 	}
 
 	/**
+	 * Set the number of stacks for Way of Illusion.
+	 *
+	 * @param int $num
+	 *
+	 * @return $this
+	 */
+	public function quest(int $num = 40): self
+	{
+		$status = $this->generateStatus('SamuroWayOfIllusion');
+		$status->stacks = $num;
+
+		$this->addStatus($status);
+
+		return $this;
+	}
+
+	/**
 	 * Add a talent to the list of selected talents, processing any specific effects.
 	 *
 	 * @param string $nameId  nameId of the target talent
@@ -407,6 +427,17 @@ class Samuro extends Hero
 					'maxStacks' => 3,
 					'amount'    => 0.15,
 					'duration'  => 4,
+				]);
+			break;
+
+			// While Advancing Strikes is active Samuro and his Mirror Images gain 10% Attack Speed every time they Basic Attack a Hero, up to 40%
+			case 'SamuroPressTheAttack':
+				return new Status([
+					'type'      => 'attackSpeed',
+					'stacks'    => 1,
+					'maxStacks' => 4,
+					'amount'    => 0.1,
+					'duration'  => $this->hasTalent('SamuroBlademastersPursuit') ? 4 : 2,
 				]);
 			break;
 		}
