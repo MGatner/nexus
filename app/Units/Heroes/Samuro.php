@@ -49,6 +49,18 @@ class Samuro extends Hero
 	{
 		/* Process all on-hit talents & abilities first */
 
+		// If Windwalk is active then cancel it; apply Harsh Winds if talented
+		$statusId = $this->hasStatus('SamuroWindwalk');
+		if ($statusId !== null)
+		{
+			$this->removeStatus($statusId);
+
+			if ($this->hasTalent('SamuroHarshWinds'))
+			{
+				$unit->addStatus($this->generateStatus('SamuroHarshWinds'));
+			}
+		}
+
 		// Hero hits increase the duration on active clones
 		if ($unit instanceof Hero)
 		{
@@ -148,10 +160,10 @@ class Samuro extends Hero
 	 */
 	public function E()
 	{
-		// WIP - process talent procs
+		$this->addStatus($this->generateStatus('SamuroWindwalk'));
 
 		// Reschedule this ability so it happens on cooldown
-		$this->schedule('E', SAMURO_COOLDOWN_E);
+		$this->schedule('E', $this->hasTalent('SamuroWindStrider') ? SAMURO_COOLDOWN_E - 6 : SAMURO_COOLDOWN_E);
 
 		return true;
 	}
@@ -175,7 +187,7 @@ class Samuro extends Hero
 			'armor' => 0,
 			'harsh' => 0,
 			'clone' => 0,
-			'total' => 0,
+			'subtotal' => 0,
 		];
 
 		// Scaled base = damage * (scaling ^ level)
@@ -187,20 +199,36 @@ class Samuro extends Hero
 			$result['clone'] += $clone->weapons[0]->damage * pow(1 + $clone->weapons[0]->damageScale, $this->level);
 		}
 
+		// Illusion Master gives clones double damage
+		if ($this->hasTalent('SamuroHeroicAbilityIllusionMaster'))
+		{
+			$result['clone'] *= 2;
+		}
+
 		// Quest damage adds a flat amount
-		if ($this->hasTalent('SamuroWayOfIllusion') && ($statusId = $this->hasStatus('SamuroWayOfIllusion')) !== false)
+		if ($this->hasTalent('SamuroWayOfIllusion') && ($statusId = $this->hasStatus('SamuroWayOfIllusion')) !== null)
 		{
 			$status = $this->statuses[$statusId];
 
 			$result['quest'] = $status->stacks * $status->amount;
 
 			// If the quest is done, add the bonus
-			if ($status->stacks >= $status->maxStatus)
+			if ($status->stacks >= $status->maxStacks)
 			{
 				$result['quest'] += SAMURO_QUEST_BONUS;
 			}
 		}
 		$adjusted = $result['base'] + $result['quest'];
+
+		// Add percent damage from Crushing Blow stacks
+		if ($this->hasTalent('SamuroCrushingBlow') && ($statusId = $this->hasStatus('SamuroCrushingBlow')) !== null)
+		{
+			$status = $this->statuses[$statusId];
+
+			$result['crush'] = $adjusted * $status->stacks * $status->amount;
+			
+			$adjusted += $result['crush'];
+		}
 
 		// Is it a critical strike?
 		if ($this->isCrit($unit))
@@ -220,15 +248,7 @@ class Samuro extends Hero
 
 			elseif ($this->hasTalent('SamuroPhantomPain'))
 			{
-				$result['crit'] = $adjusted * (0.5 + ($this->clones * 0.45));
-			}
-
-			elseif ($this->hasTalent('SamuroCrushingBlow') && ($statusId = $this->hasStatus('SamuroCrushingBlow')) !== null)
-			{
-				$status = $this->statuses[$statusId];
-
-				$result['crush'] = $adjusted * $status->stacks * $status->amount;
-				$result['crit']  = $adjusted * 0.5;
+				$result['crit'] = $adjusted * (0.5 + (count($this->clones) * 0.45));
 			}
 
 			else
@@ -254,13 +274,16 @@ class Samuro extends Hero
 		}
 		
 		// Harsh Winds is straight % increase
-		if ($this->hasTalent('SamuroHarshWinds'))
+		$statusId = $unit->hasStatus('SamuroHarshWinds');
+		if ($statusId !== null)
 		{
-			$result['harsh'] = $damage * 0.3;
+			$status = $unit->statuses()[$statusId];
+			$result['harsh'] = $damage * $status->amount;
 		}
 
 		// Tally it up
-		$result['total'] = array_sum($result);
+		$result['subtotal'] = array_sum($result);
+		$result['samuro']   = $result['subtotal'] - $result['clone'];
 
 		return $result;
 	}
@@ -398,6 +421,15 @@ class Samuro extends Hero
 	{
 		switch ($name)
 		{
+			// Grant Samuro Stealth for up to 10 seconds. While Stealthed, Samuro heals for 1% of his maximum health every second, his Movement Speed is increased by 25%
+			case 'SamuroWindwalk':
+				return new Status([
+					'type'      => 'SamuroWindwalk',
+					'amount'    => 1,
+					'duration'  => 10,
+				]);
+			break;
+
 			// Every time a Mirror Image Critically Strikes a Hero, Samuro gains 0.25 Attack Damage, up to 10
 			case 'SamuroWayOfIllusion':
 				return new Status([
@@ -440,6 +472,16 @@ class Samuro extends Hero
 					'duration'  => $this->hasTalent('SamuroBlademastersPursuit') ? 4 : 2,
 				]);
 			break;
+
+			// Attacking a Hero during Wind Walk causes them to take 30% increased damage from Samuro for 3 seconds
+			case 'SamuroHarshWinds':
+				return new Status([
+					'type'      => 'SamuroHarshWinds',
+					'amount'    => 0.3,
+					'duration'  => 3,
+				]);
+			break;
+
 		}
 
 		throw new \RuntimeException('Unknown status requested: ' . $name);

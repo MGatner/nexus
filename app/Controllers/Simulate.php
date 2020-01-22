@@ -35,6 +35,11 @@ class Simulate extends BaseController
 		$samuro->setCrit(0);
 		$samuro->Q();
 		$samuro->E();
+		
+		if ($samuro->hasTalent('SamuroWayOfIllusion'))
+		{
+			$samuro->quest();
+		}
 
 		// Schedule the first attack then W immediately after
 		$samuro->schedule('A', 0, $unit);
@@ -42,7 +47,7 @@ class Simulate extends BaseController
 
 		// Start the HTML table
 		$table = new \CodeIgniter\View\Table();
-		$table->setHeading(['Base', 'Quest', 'Crush', 'Crit', 'Spell', 'Armor', 'Harsh', 'Clone', 'Total', 'Timestamp', 'ID']);
+		$table->setHeading(['Base', 'Quest', 'Crush', 'Crit', 'Spell', 'Armor', 'Harsh', 'Clone', 'Subtotal', 'Samuro', 'Timestamp', 'ID', 'Total']);
 
 		// Run the schedule, adding outcomes as rows
 		$total = 0;
@@ -55,9 +60,15 @@ class Simulate extends BaseController
 				$row['time']  = $outcome->timestamp;
 				$row['count'] = $count;
 
-				$table->addRow(array_map(function($num) { return round($num, 2); }, $row));
+				// Round all values
+				$row = array_map(function($num) { return round($num, 2); }, $row);
 				
-				$total += $row['total'];
+				$total += $row['subtotal'];
+				$row['total'] = $total;
+				$count++;
+
+				$table->addRow($row);
+
 				$count++;
 			}
 		}

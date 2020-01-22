@@ -54,14 +54,18 @@ class Simulate extends BaseCommand
 				$row['time']  = $outcome->timestamp;
 				$row['count'] = $count;
 
-				$rows[] = array_map(function($num) { return round($num, 2); }, $row);
+				$row = array_map(function($num) { return round($num, 2); }, $row);
 				
-				$total += $row['total'];
+				$total += $row['subtotal'];
+				$row['total'] = $total;
+				
+				$rows[] = $row;
+
 				$count++;
 			}
 		}
 
-		$thead = ['Base', 'Quest', 'Crush', 'Crit', 'Spell', 'Armor', 'Harsh', 'Clone', 'Total', 'Timestamp', 'ID'];
+		$thead = ['Base', 'Quest', 'Crush', 'Crit', 'Spell', 'Armor', 'Harsh', 'Clone', 'Subtotal', 'Samuro', 'Timestamp', 'ID', 'Total'];
 		CLI::table($rows, $thead);
 		
 		CLI::write('Total damage: ' . number_format($total, 2), 'green');
