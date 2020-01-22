@@ -62,7 +62,7 @@ class BasicSimulationTest extends \CodeIgniter\Test\CIUnitTestCase
 		$damage = 0;
 		while ($outcome = $this->schedule->pop())
 		{
-			$damage += $outcome->data['total'];
+			$damage += $outcome->data['subtotal'];
 		}
 
 		$this->assertEquals(6046, (int) $damage);

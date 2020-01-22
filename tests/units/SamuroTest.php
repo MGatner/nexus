@@ -50,7 +50,8 @@ class SamuroTest extends \CodeIgniter\Test\CIUnitTestCase
 			'armor' => 0,
 			'harsh' => 0,
 			'clone' => 0,
-			'total' => 106.08,
+			'subtotal' => 106.08,
+			'samuro' => 106.08,
 		];
 
 		$result = $this->samuro->calculateAttackDamage($this->raynor);
@@ -71,7 +72,8 @@ class SamuroTest extends \CodeIgniter\Test\CIUnitTestCase
 			'armor' => 0,
 			'harsh' => 0,
 			'clone' => 0,
-			'total' => 159.12,
+			'subtotal' => 159.12,
+			'samuro' => 159.12,
 		];
 
 		$result = $this->samuro->calculateAttackDamage($this->raynor);
@@ -97,7 +99,8 @@ class SamuroTest extends \CodeIgniter\Test\CIUnitTestCase
 			'armor' => -10.608,
 			'harsh' => 0,
 			'clone' => 0,
-			'total' => 95.472,
+			'subtotal' => 95.472,
+			'samuro' => 95.472,
 		];
 
 		$result = $this->samuro->calculateAttackDamage($this->raynor);
@@ -123,7 +126,8 @@ class SamuroTest extends \CodeIgniter\Test\CIUnitTestCase
 			'armor' => 10.608,
 			'harsh' => 0,
 			'clone' => 0,
-			'total' => 116.688,
+			'subtotal' => 116.688,
+			'samuro' => 116.688,
 		];
 
 		$result = $this->samuro->calculateAttackDamage($this->raynor);

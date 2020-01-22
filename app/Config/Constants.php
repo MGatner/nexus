@@ -84,7 +84,7 @@ defined('EXIT__AUTO_MAX')      || define('EXIT__AUTO_MAX', 125); // highest auto
 | but are here now for convenience.
 |--------------------------------------------------------------------------
 */
-defined('SAMURO_QUEST_BONUS')    || define('SAMURO_QUEST_BONUS', 20);
+defined('SAMURO_QUEST_BONUS')    || define('SAMURO_QUEST_BONUS', 30);
 
 defined('SAMURO_COOLDOWN_Q')  || define('SAMURO_COOLDOWN_Q', 14);
 defined('SAMURO_COOLDOWN_W')  || define('SAMURO_COOLDOWN_W', 10);
