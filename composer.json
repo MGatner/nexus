@@ -1,8 +1,8 @@
 {
-    "name": "mgatner/blademaster",
+    "name": "mgatner/nexus",
     "type": "project",
-    "description": "Heroes of the Storm simulator for Samuro",
-    "homepage": "https://tat.red/blademaster",
+    "description": "Heroes of the Storm Simulator",
+    "homepage": "https://nexus.tat.red/",
     "license": "MIT",
 	"minimum-stability": "dev",
 	"prefer-stable": true,
@@ -24,6 +24,9 @@
         "php": ">=7.2",
         "codeigniter4/codeigniter4": "dev-develop",
         "heroestoolchest/heroes-data": "dev-nexus",
+		"fortawesome/font-awesome": "^5.8",
+		"twbs/bootstrap": "^4.3",
+		"components/jquery": "^3.3",
         "tatter/assets": "^2.1",
         "tatter/alerts": "^2.0",
         "tatter/themes": "^1.0",
@@ -33,10 +36,7 @@
         "mikey179/vfsstream": "1.6.*",
 		"mockery/mockery": "^1.0",
         "phpunit/phpunit": "^7.0",
-		"fzaninotto/faker": "^1.9@dev",
-		"twbs/bootstrap": "^4.3",
-		"components/jquery": "^3.3",
-		"fortawesome/font-awesome": "^5.8"
+		"fzaninotto/faker": "^1.9@dev"
     },
 	"autoload-dev": {
 		"psr-4": {

@@ -1,6 +1,6 @@
 # Nexus Simulator
 
-Heroes of the Storm simulator
+Heroes of the Storm Simulator
 
 ## Requirements
 
@@ -16,8 +16,7 @@ Framework requirements may change but here is a good start:
 Framework requirements may depend on your choice of web host. See "Hosting with ..."
 in the CodeIgniter [User Guide](https://codeigniter4.github.io/CodeIgniter4/installation/running.html).
 
-You will also need [Composer](https://getcomposer.org/download/)
-to install it and manage dependencies.
+You will also need [Composer](https://getcomposer.org/download/) to install and manage dependencies.
 
 ## Installation
 
@@ -36,8 +35,8 @@ interface there are some additional steps to configure a database.
 
 ## Running
 
-Point the web server to the **public** directory in the project root. For development you
-can serve it locally
+Point the web server to the **public** directory in the project root.
+For development you can serve it locally
 ([docs](https://codeigniter4.github.io/CodeIgniter4/installation/running.html)):
 
 	php spark serve
@@ -45,7 +44,3 @@ can serve it locally
 You can also interface with the Command Line Interface using `spark`, e.g.:
 
 	php spark simulate
-
-## Modifying
-
-*Coming soon*
