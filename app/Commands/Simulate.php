@@ -1,6 +1,7 @@
 <?php namespace App\Commands;
 
 use App\Units\Hero;
+use App\Units\Unit;
 use App\Units\Heroes\Samuro;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
@@ -30,6 +31,8 @@ class Simulate extends BaseCommand
 		// Fetch our combatants
 		$samuro = new Samuro(20, $talents);
 		$raynor = new Hero('raynor', 20);
+		
+		$unit = new Unit('MercDefenderSiegeGiant');
 
 		$samuro->schedule()->timelimit = 20;
 

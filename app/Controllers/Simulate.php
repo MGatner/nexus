@@ -1,6 +1,7 @@
 <?php namespace App\Controllers;
 
 use App\Units\Hero;
+use App\Units\Unit;
 use App\Units\Heroes\Samuro;
 
 class Simulate extends BaseController
@@ -29,7 +30,7 @@ class Simulate extends BaseController
 		// WIP - needs to check for implemented hero class \App\Units\Heroes\{$hero}
 		$samuro = new Samuro($level, $post);
 
-		$unit = new Hero($target);
+		$unit = $target == 'Raynor' ? new Hero($target) : new Unit($target);
 
 		// Pre-cast abilities in the desired order
 		$samuro->setCrit(0);

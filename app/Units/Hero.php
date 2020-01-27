@@ -108,7 +108,6 @@ class Hero extends BaseUnit
 
 	/**
 	 * Add each talent to the list of selected talents.
-	 * WIP - probably needs to check for talent removal or something
 	 *
 	 * @param string $nameId  nameId of the target talent
 	 *

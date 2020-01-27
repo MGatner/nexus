@@ -16,8 +16,9 @@
 
 			<div class="form-group">
 				<label for="target">Target</label>
-					<select class="custom-select" name="target" disabled>
-						<option selected>Raynor</option>
+					<select class="custom-select" name="target">
+						<option>Raynor</option>
+						<option>MercDefenderSiegeGiant</option>
 					</select>
 				</select>
 			</div>
