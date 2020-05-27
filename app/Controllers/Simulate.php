@@ -59,11 +59,12 @@ class Simulate extends BaseController
 
 		// Start the HTML table
 		$table = new \CodeIgniter\View\Table();
-		$table->setHeading(['Base', 'Quest', 'Crush', 'Crit', 'Spell', 'Armor', 'Harsh', 'Clone', 'Subtotal', 'Samuro', 'Timestamp', 'ID', 'Total']);
+		$table->setHeading(['Base', 'Quest', 'Crush', 'Crit', 'Spell', 'Armor', 'Harsh', 'Clone', 'Subtotal', 'Samuro', 'Timestamp', 'ID', 'SamTotal', 'Total']);
 
 		// Run the schedule, adding outcomes as rows
-		$total = 0;
-		$count = 1;
+		$total    = 0;
+		$samTotal = 0;
+		$count    = 1;
 		while ($outcome = $samuro->schedule()->pop())
 		{
 			if ($outcome->keep)
@@ -74,7 +75,10 @@ class Simulate extends BaseController
 
 				// Round all values
 				$row = array_map(function($num) { return round($num, 2); }, $row);
-				
+
+				$samTotal += $row['samuro'];
+				$row['samTotal'] = $samTotal;
+
 				$total += $row['subtotal'];
 				$row['total'] = $total;
 				$count++;
