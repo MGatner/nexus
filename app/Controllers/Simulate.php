@@ -1,5 +1,6 @@
 <?php namespace App\Controllers;
 
+use App\Libraries\Status;
 use App\Units\Hero;
 use App\Units\Unit;
 use App\Units\Heroes\Samuro;
@@ -36,10 +37,20 @@ class Simulate extends BaseController
 		$samuro->setCrit(0);
 		$samuro->Q();
 		$samuro->E();
-		
+
+		// If WoI was selected then complete the quest
 		if ($samuro->hasTalent('SamuroWayOfIllusion'))
 		{
 			$samuro->quest();
+		}
+		// If Merciless was selected then slow the target (if it is a hero)
+		if ($samuro->hasTalent('SamuroMercilessStrikes') && $unit instanceof Hero)
+		{
+			$unit->addStatus(new Status([
+				'type'      => 'slow',
+				'stacks'    => 1,
+				'amount'    => 0.20,
+			]));
 		}
 
 		// Schedule the first attack then W immediately after

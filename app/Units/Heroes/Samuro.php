@@ -350,7 +350,7 @@ class Samuro extends Hero
 		}
 		
 		// Otherwise it is a crit if Merciless Strikes hits a CC hero
-		return $unit instanceof Hero && $unit->hasStatus(['stun', 'root', 'slow']) && $this->hasTalent('SamuroHarshWinds');
+		return $unit instanceof Hero && $unit->hasStatus(['stun', 'root', 'slow']) !== null && $this->hasTalent('SamuroMercilessStrikes');
 	}
 
 	/**
