@@ -457,7 +457,7 @@ class Samuro extends Hero
 					'type'      => 'SamuroCrushingBlow',
 					'stacks'    => 1,
 					'maxStacks' => 3,
-					'amount'    => 0.15,
+					'amount'    => 0.10,
 					'duration'  => 4,
 				]);
 			break;
