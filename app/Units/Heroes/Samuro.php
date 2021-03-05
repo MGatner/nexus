@@ -248,7 +248,7 @@ class Samuro extends Hero
 
 			elseif ($this->hasTalent('SamuroPhantomPain') && $unit instanceof Hero)
 			{
-				$result['crit'] = $adjusted * (0.5 + (count($this->clones) * 0.45));
+				$result['crit'] = $adjusted * (0.5 + (count($this->clones) * 0.35));
 			}
 
 			else
