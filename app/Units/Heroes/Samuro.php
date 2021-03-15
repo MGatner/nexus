@@ -220,16 +220,6 @@ class Samuro extends Hero
 		}
 		$adjusted = $result['base'] + $result['quest'];
 
-		// Add percent damage from Crushing Blow stacks
-		if ($this->hasTalent('SamuroCrushingBlow') && ($statusId = $this->hasStatus('SamuroCrushingBlow')) !== null)
-		{
-			$status = $this->statuses[$statusId];
-
-			$result['crush'] = $adjusted * $status->stacks * $status->amount;
-			
-			$adjusted += $result['crush'];
-		}
-
 		// Is it a critical strike?
 		if ($this->isCrit($unit))
 		{
@@ -261,6 +251,16 @@ class Samuro extends Hero
 			{
 				$result['clone'] += $result['clone'] * 0.5;
 			}
+		}
+
+		// Add percent damage from Crushing Blow stacks
+		if ($this->hasTalent('SamuroCrushingBlow') && ($statusId = $this->hasStatus('SamuroCrushingBlow')) !== null)
+		{
+			$status = $this->statuses[$statusId];
+
+			$result['crush'] = $adjusted * $status->stacks * $status->amount;
+
+			$adjusted += $result['crush'];
 		}
 
 		// Calculate the total so far
