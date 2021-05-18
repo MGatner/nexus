@@ -179,14 +179,16 @@ class Samuro extends Hero
 	{
 		// Tally each damage source as we go
 		$result = [
-			'base'  => 0,
-			'quest' => 0,
-			'crush' => 0,
-			'crit'  => 0,
-			'spell' => 0,
-			'armor' => 0,
-			'harsh' => 0,
-			'clone' => 0,
+			'base'     => 0,
+			'quest'    => 0,
+			'crush'    => 0,
+			'crit'     => 0,
+			'spell'    => 0,
+			'armor'    => 0,
+			'harsh'    => 0,
+			'clone'    => 0,
+			'ccrit'    => 0,
+			'cspell'   => 0,
 			'subtotal' => 0,
 		];
 
@@ -197,12 +199,6 @@ class Samuro extends Hero
 		foreach ($this->clones as $clone)
 		{
 			$result['clone'] += $clone->weapons[0]->damage * pow(1 + $clone->weapons[0]->damageScale, $this->level);
-		}
-
-		// Illusion Master gives clones double damage
-		if ($this->hasTalent('SamuroHeroicAbilityIllusionMaster'))
-		{
-			$result['clone'] *= 2;
 		}
 
 		// Quest damage adds a flat amount
@@ -232,7 +228,8 @@ class Samuro extends Hero
 				// Clones proc their own BB
 				if ($count = count($this->clones))
 				{
-					$result['spell'] += $result['clone'] * 0.5 * $count;
+					// Check for Illusion Master because the 100% applies to BB as well
+					$result['cspell'] = $result['clone'] * ($this->hasTalent('SamuroHeroicAbilityIllusionMaster') ? 1.5 : 0.5);
 				}
 			}
 
@@ -249,7 +246,7 @@ class Samuro extends Hero
 			// Clones get crits too
 			if ($count = count($this->clones))
 			{
-				$result['clone'] += $result['clone'] * 0.5;
+				$result['ccrit'] = $result['clone'] * 0.5;
 			}
 		}
 
@@ -279,6 +276,12 @@ class Samuro extends Hero
 		{
 			$status = $unit->statuses()[$statusId];
 			$result['harsh'] = $damage * $status->amount;
+		}
+
+		// Illusion Master gives clones double damage
+		if ($this->hasTalent('SamuroHeroicAbilityIllusionMaster'))
+		{
+			$result['clone'] *= 2;
 		}
 
 		// Tally it up

@@ -59,7 +59,7 @@ class Simulate extends BaseController
 
 		// Start the HTML table
 		$table = new \CodeIgniter\View\Table();
-		$table->setHeading(['Base', 'Quest', 'Crush', 'Crit', 'Spell', 'Armor', 'Harsh', 'Clone', 'Subtotal', 'Samuro', 'Timestamp', 'ID', 'SamTotal', 'Total']);
+		$table->setHeading(['Base', 'Quest', 'Crush', 'Crit', 'Spell', 'Armor', 'Harsh', 'Clone', 'CCrit', 'CSpell', 'Subtotal', 'Samuro', 'Timestamp', 'ID', 'SamTotal', 'Total']);
 
 		// Run the schedule, adding outcomes as rows
 		$total    = 0;
