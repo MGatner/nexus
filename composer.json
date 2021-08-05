@@ -25,7 +25,7 @@
         "codeigniter4/codeigniter4": "dev-develop",
         "heroestoolchest/heroes-data": "dev-nexus",
 		"fortawesome/font-awesome": "^5.8",
-		"twbs/bootstrap": "^4.3",
+		"twbs/bootstrap": "^5.1",
 		"components/jquery": "^3.3",
         "tatter/assets": "^2.1",
         "tatter/alerts": "^2.0",
