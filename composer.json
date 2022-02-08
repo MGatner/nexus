@@ -24,7 +24,7 @@
         "php": ">=7.2",
         "codeigniter4/codeigniter4": "dev-develop",
         "heroestoolchest/heroes-data": "dev-nexus",
-		"fortawesome/font-awesome": "^5.8",
+		"fortawesome/font-awesome": "^6.0",
 		"twbs/bootstrap": "^4.3",
 		"components/jquery": "^3.3",
         "tatter/assets": "^2.1",
